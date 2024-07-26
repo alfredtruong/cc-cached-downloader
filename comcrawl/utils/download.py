@@ -1,7 +1,6 @@
 """Download Helpers.
 
-This module contains helper functions for downloading
-pages from the Common Crawl S3 Buckets.
+This module contains helper functions for downloading pages from the Common Crawl S3 Buckets.
 
 """
 
@@ -12,7 +11,7 @@ from ..types import Result, ResultList
 from .multithreading import make_multithreaded
 
 
-URL_TEMPLATE = "https://commoncrawl.s3.amazonaws.com/{filename}"
+URL_TEMPLATE = "https://data.commoncrawl.org/{filename}"
 
 
 def download_single_result(result: Result) -> Result:
@@ -20,13 +19,15 @@ def download_single_result(result: Result) -> Result:
 
     Args:
         result: Common Crawl Index search result from the search function.
-
+            result["offset"]
+            result["length"]
+            result["filename"]
+            result["digest"]
     Returns:
-        The provided result, extendey by the corresponding HTML String.
+        The provided result, extended by the corresponding HTML String.
 
     """
-    offset, length = int(result["offset"]), int(result["length"])
-
+    offset, length = int(result["offset"]), int(result["length"]) # TODO need to ensure Athena query returns these names
     offset_end = offset + length - 1
 
     url = URL_TEMPLATE.format(filename=result["filename"])
@@ -46,17 +47,16 @@ def download_single_result(result: Result) -> Result:
         print(f"Warning: Could not extract file downloaded from {url}")
         data = ""
 
-    result["html"] = ""
-
+    # maybe just save it and dont bloat memory
+    result["content"] = ""
     if len(data) > 0:
-        data_parts = data.strip().split("\r\n\r\n", 2)
-        result["html"] = data_parts[2] if len(data_parts) == 3 else ""
+        data_parts = data.strip().split("\r\n\r\n", 2) # remove warc scrape info
+        if len(data_parts) == 3:
+            result["content"] = data_parts[2]
 
     return result
 
-
-def download_multiple_results(results: ResultList,
-                              threads: int = None) -> ResultList:
+def download_multiple_results(results: ResultList, threads: int = None, path: str = 'data/contents/', force_update: bool = False) -> ResultList:
     """Downloads search results.
 
     For each Common Crawl search result in the given list the
@@ -64,26 +64,23 @@ def download_multiple_results(results: ResultList,
 
     Args:
         results: List of Common Crawl search results.
-        threads: Number of threads to use for faster parallel downloads on
-            multiple threads.
+        threads: Number of threads to use for faster parallel downloads on multiple threads.
 
     Returns:
-        The provided results list, extended by the corresponding
-        HTML strings.
+        The provided results list, extended by the corresponding contents.
 
     """
-    results_with_html = []
-
-    # multi-threaded download
+    # populate results
+    results_with_content: ResultList = [] # default result
     if threads:
-        multithreaded_download = make_multithreaded(download_single_result,
-                                                    threads)
-        results_with_html = multithreaded_download(results)
+        # multi-thread
+        multithreaded_download = make_multithreaded(download_single_result, threads)
+        results_with_content = multithreaded_download(results)
 
-    # single-threaded download
     else:
+        # single-thread
         for result in results:
-            result_with_html = download_single_result(result)
-            results_with_html.append(result_with_html)
+            result_with_content = download_single_result(result)
+            results_with_content.append(result_with_content)
 
-    return results_with_html
+    return results_with_content

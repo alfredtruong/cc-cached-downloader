@@ -38,17 +38,17 @@ pip install comcrawl
 
 ### Basic
 
-The HTML for each page will be available as a string in the 'html' key in each results dictionary after calling the `download` method.
+The content for warc record will be available as a string in the 'content' key in each results dictionary after calling the `download` method.
 
 ```python
 from comcrawl import IndexClient
 
 client = IndexClient()
 
-client.search("reddit.com/r/MachineLearning/*")
+client.search_api("reddit.com/r/MachineLearning/*")
 client.download()
 
-first_page_html = client.results[0]["html"]
+first_record = client.results[0]["content"]
 ```
 
 ### Multithreading
@@ -62,7 +62,7 @@ from comcrawl import IndexClient
 
 client = IndexClient()
 
-client.search("reddit.com/r/MachineLearning/*", threads=4)
+client.search_api("reddit.com/r/MachineLearning/*", threads=4)
 client.download(threads=4)
 ```
 
@@ -75,7 +75,7 @@ from comcrawl import IndexClient
 import pandas as pd
 
 client = IndexClient()
-client.search("reddit.com/r/MachineLearning/*")
+client.search_api("reddit.com/r/MachineLearning/*")
 
 client.results = (pd.DataFrame(client.results)
                   .sort_values(by="timestamp")
@@ -97,7 +97,7 @@ By default, when instantiated, the `IndexClient` fetches a list of currently ava
 from comcrawl import IndexClient
 
 client = IndexClient(["2019-51", "2019-47"])
-client.search("reddit.com/r/MachineLearning/*")
+client.search_api("reddit.com/r/MachineLearning/*")
 client.download()
 ```
 
@@ -109,7 +109,7 @@ When debugging your code, you can enable logging of all HTTP requests that are m
 from comcrawl import IndexClient
 
 client = IndexClient(verbose=True)
-client.search("reddit.com/r/MachineLearning/*")
+client.search_api("reddit.com/r/MachineLearning/*")
 client.download()
 ```
 

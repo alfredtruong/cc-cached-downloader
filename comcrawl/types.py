@@ -8,7 +8,8 @@ used throughout the project.
 
 from typing import List, Dict
 
-IndexList = List[str]
+Index = str # e.g. '2024-26'
+IndexList = List[Index] # e.g. ['2024-26']
 
 Result = Dict
 ResultList = List[Dict]

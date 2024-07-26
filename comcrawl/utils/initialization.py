@@ -8,8 +8,10 @@ initializing the Index Client.
 import requests
 from ..types import IndexList
 
+INDEX_LIST = "https://index.commoncrawl.org/collinfo.json"
 
-def fetch_available_indexes() -> IndexList:
+
+def download_available_indexes() -> IndexList:
     """Fetches the available Common Crawl Indexes to search.
 
     Returns:
@@ -17,7 +19,7 @@ def fetch_available_indexes() -> IndexList:
 
     """
     index_list = (requests
-                  .get("https://index.commoncrawl.org/collinfo.json")
+                  .get(INDEX_LIST)
                   .json())
 
     # other functions don't expect this prefix

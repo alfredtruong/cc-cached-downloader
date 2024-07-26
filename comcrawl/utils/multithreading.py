@@ -9,8 +9,7 @@ from typing import Callable, List
 from concurrent import futures
 
 
-def make_multithreaded(func: Callable,
-                       threads: int) -> Callable:
+def make_multithreaded(func: Callable, threads: int) -> Callable:
     """Creates a multithreaded version of a function.
 
     Args:

@@ -17,7 +17,7 @@ KNOWN_RESULT = {
     'CC-MAIN-20191207160050-20191207184050-00394.warc.gz',
     'status': '200'}
 
-KNOWN_RESULT_NO_HTML = {
+KNOWN_RESULT_NO_CONTENT = {
     'urlkey': 'org,wikipedia,de)/wiki/%20vaterl%c3%a4ndische_front',
     'timestamp': '20191211090655',
     'digest': '3I42H3S6NNFQ2MSVX7XZKYAYSCX5QBYJ',
@@ -31,7 +31,7 @@ KNOWN_RESULT_NO_HTML = {
     'status': '301',
     'mime': 'text/html'}
 
-KNOWN_RESULT_NO_HTML_ERROR_HANDLING = {
+KNOWN_RESULT_NO_CONTENT_ERROR_HANDLING = {
     'urlkey': ('com,publicstorage)/blog/seasonal/-/media/website/'
                'blog/photos/2014/01/red-fabric-christmas-ornament-storage-box.ashx'),
     'timestamp': '20200531041432',
@@ -50,17 +50,17 @@ KNOWN_RESULT_NO_HTML_ERROR_HANDLING = {
 
 def test_download_single_result(snapshot):
     result = download_single_result(KNOWN_RESULT)
-    snapshot.assert_match(result["html"])
+    snapshot.assert_match(result["content"])
 
 
-def test_download_single_result_without_html():
-    result = download_single_result(KNOWN_RESULT_NO_HTML)
-    assert result["html"] == ""
+def test_download_single_result_without_content():
+    result = download_single_result(KNOWN_RESULT_NO_CONTENT)
+    assert result["content"] == ""
 
 
-def test_download_single_result_without_html_error_handling():
-    result = download_single_result(KNOWN_RESULT_NO_HTML_ERROR_HANDLING)
-    assert result["html"] == ""
+def test_download_single_result_without_content_error_handling():
+    result = download_single_result(KNOWN_RESULT_NO_CONTENT_ERROR_HANDLING)
+    assert result["content"] == ""
 
 
 KNOWN_RESULTS = [{'charset': 'UTF-8',

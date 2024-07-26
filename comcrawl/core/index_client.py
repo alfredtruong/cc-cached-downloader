@@ -5,11 +5,13 @@ This module contains the core object of the package.
 """
 
 import logging
-from ..types import IndexList, ResultList
+from pathlib import Path
+from ..types import Index, IndexList, ResultList
 from ..utils import (
-    fetch_available_indexes,
+    download_available_indexes,
     search_multiple_indexes,
-    download_multiple_results
+    download_multiple_results,
+    read_json,write_json
 )
 
 
@@ -21,14 +23,11 @@ class IndexClient:
     corresponding Common Crawl AWS s3 Buckets locations.
 
     Attributes:
-        results: The list of results after calling the
-            search method.
+        results: The list of results after calling the search method.
 
     """
 
-    def __init__(self,
-                 indexes: IndexList = None,
-                 verbose: bool = False) -> None:
+    def __init__(self, index: Index = None, cache: str = 'data/', verbose: bool = False) -> None:
         """Initializes the class instance.
 
         Args:
@@ -43,18 +42,14 @@ class IndexClient:
         if verbose:
             logging.basicConfig(level=logging.DEBUG)
 
-        if indexes:
-            self.indexes = indexes
-        else:
-            self.indexes = fetch_available_indexes()
-
+        self.indexes = index
+        self.cache = Path(cache)
         self.results: ResultList = []
 
-    def search(self, url: str, threads: int = None) -> None:
-        """Search.
+    def get_available_indexes(self, force_update: bool = False) -> IndexList:
+        """Show all available indexes
 
-        Searches the Common Crawl indexes this class was
-        intialized with.
+        Searches the Common Crawl indexes this class was intialized with.
 
         Args:
             url: URL pattern to search
@@ -62,17 +57,55 @@ class IndexClient:
                 multi-threading only if set.
 
         """
-        self.results = search_multiple_indexes(url, self.indexes, threads)
+        # where we would cache the results
+        cache_target = self.cache / 'index/collinfo.json'
 
-    def download(self, threads: int = None) -> None:
+        # download or read it
+        if not cache_target.exists() or force_update:
+            available_indexes = download_available_indexes() # download
+            if not cache_target.parent.exists(): cache_target.mkdir(parents=True, exist_ok=True) # ensure output directory exists
+            write_json(available_indexes, cache_target) # cache results
+        else:
+            available_indexes = read_json(cache_target) # read cache
+
+        # return it
+        return available_indexes
+
+    def search_athena(self, query: str, force_update: bool = False) -> None:
+        """Search.
+
+        Searches the Common Crawl indexes this class was intialized with.
+
+        Args:
+            url: URL pattern to search
+            threads: Number of threads to use. Enables
+                multi-threading only if set.
+
+        """
+        self.results = None
+
+
+    def search_api(self, url: str, threads: int = None, force_update: bool = False) -> None:
+        """Search.
+
+        Searches the Common Crawl indexes this class was intialized with.
+
+        Args:
+            url: URL pattern to search
+            threads: Number of threads to use. Enables
+                multi-threading only if set.
+
+        """
+        self.results = search_multiple_indexes(url, self.indexes, threads, self.cache / 'search_api', force_update)
+
+    def download(self, threads: int = None, force_update: bool = False) -> None:
         """Download.
 
-        Downloads the HTML for every result in the
-        instances `results` attribute.
+        Downloads warc extracts for every search result in the `results` attribute.
 
         Args:
             threads: Number of threads to use. Enables
                 multi-threading only if set.
 
         """
-        self.results = download_multiple_results(self.results, threads)
+        self.results = download_multiple_results(self.results, threads, self.cache / 'records' , force_update)
