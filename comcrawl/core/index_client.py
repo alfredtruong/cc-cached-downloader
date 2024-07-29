@@ -59,7 +59,7 @@ class IndexClient:
         # return it
         return available_indexes
 
-    def search_athena(self, query: str, force_update: bool = False) -> None:
+    def populate_results_with_athena_query(self, query: str, force_update: bool = False) -> None:
         """Search.
 
         Searches the Common Crawl indexes this class was intialized with.
@@ -71,8 +71,7 @@ class IndexClient:
         """
         self.results = None
 
-
-    def search_api(self, url: str, threads: int = None, force_update: bool = False) -> None:
+    def populate_results_with_url_filter(self, url: str, threads: int = None, force_update: bool = False) -> None:
         """Search.
 
         Searches the Common Crawl indexes this class was intialized with.

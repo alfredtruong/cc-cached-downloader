@@ -45,7 +45,7 @@ from comcrawl import IndexClient
 
 client = IndexClient()
 
-client.search_api("reddit.com/r/MachineLearning/*")
+client.populate_results_with_url_filter("reddit.com/r/MachineLearning/*")
 client.download()
 
 first_record = client.results[0]["content"]
@@ -62,7 +62,7 @@ from comcrawl import IndexClient
 
 client = IndexClient()
 
-client.search_api("reddit.com/r/MachineLearning/*", threads=4)
+client.populate_results_with_url_filter("reddit.com/r/MachineLearning/*", threads=4)
 client.download(threads=4)
 ```
 
@@ -75,7 +75,7 @@ from comcrawl import IndexClient
 import pandas as pd
 
 client = IndexClient()
-client.search_api("reddit.com/r/MachineLearning/*")
+client.populate_results_with_url_filter("reddit.com/r/MachineLearning/*")
 
 client.results = (pd.DataFrame(client.results)
                   .sort_values(by="timestamp")
@@ -97,7 +97,7 @@ By default, when instantiated, the `IndexClient` fetches a list of currently ava
 from comcrawl import IndexClient
 
 client = IndexClient(["2019-51", "2019-47"])
-client.search_api("reddit.com/r/MachineLearning/*")
+client.populate_results_with_url_filter("reddit.com/r/MachineLearning/*")
 client.download()
 ```
 
@@ -109,7 +109,7 @@ When debugging your code, you can enable logging of all HTTP requests that are m
 from comcrawl import IndexClient
 
 client = IndexClient(verbose=True)
-client.search_api("reddit.com/r/MachineLearning/*")
+client.populate_results_with_url_filter("reddit.com/r/MachineLearning/*")
 client.download()
 ```
 
