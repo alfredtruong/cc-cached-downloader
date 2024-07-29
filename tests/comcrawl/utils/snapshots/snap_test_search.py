@@ -7,7 +7,7 @@ from snapshottest import Snapshot
 
 snapshots = Snapshot()
 
-snapshots['test_search_single_index 1'] = [{'charset': 'UTF-8',
+snapshots['test_get_single_index 1'] = [{'charset': 'UTF-8',
                                             'digest': '745JGUNVPWB4L3TWJIGUQRQFTFSREJ5J',
                                             'filename': 'crawl-data/CC-MAIN-2019-51/segments/1575540500637.40/warc/CC-MAIN-20191207160050-20191207184050-00394.warc.gz',
                                             'languages': 'eng',
@@ -40,7 +40,7 @@ snapshots['test_search_single_index 1'] = [{'charset': 'UTF-8',
                                             'url': 'http://index.commoncrawl.org/robots.txt',
                                             'urlkey': 'org,commoncrawl,index)/robots.txt'}]
 
-snapshots['test_search_multiple_indexes_single_threaded 1'] = [
+snapshots['test_get_multiple_indexes_single_threaded 1'] = [
     {
         'charset': 'UTF-8',
         'digest': '745JGUNVPWB4L3TWJIGUQRQFTFSREJ5J',
@@ -71,7 +71,7 @@ snapshots['test_search_multiple_indexes_single_threaded 1'] = [
     }
 ]
 
-snapshots['test_search_multiple_indexes_multi_threaded 1'] = [
+snapshots['test_get_multiple_indexes_multi_threaded 1'] = [
     {
         'charset': 'UTF-8',
         'digest': 'SVH4V5QDUS7SMXSXZYB2XWJSVDWFXUD7',

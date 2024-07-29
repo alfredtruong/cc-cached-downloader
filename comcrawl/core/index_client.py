@@ -6,21 +6,14 @@ This module contains the core object of the package.
 
 import logging
 from pathlib import Path
-from ..types import Index, IndexList, ResultList
-from ..utils import (
-    download_available_indexes,
-    search_multiple_indexes,
-    download_multiple_results,
-    read_json,write_json
-)
+from ..utils.types import Index, IndexList, ResultList
+from ..utils import download_available_indexes,get_multiple_indexes,get_multiple_records,read_json,write_json
 
 
 class IndexClient:
     """Common Crawl Index Client.
 
-    After instantiating this class, it can be used to
-    query Common Crawl indexes and download pages from the
-    corresponding Common Crawl AWS s3 Buckets locations.
+    Query Common Crawl indexes and download pages from the corresponding Common Crawl AWS S3 Buckets locations.
 
     Attributes:
         results: The list of results after calling the search method.
@@ -31,18 +24,14 @@ class IndexClient:
         """Initializes the class instance.
 
         Args:
-            indexes: List of Index name strings to focus on.
-                If left out, a list of all currently available
-                Common Crawl indexes will be fetched and used
-                for searches.
-            verbose: Whether to print debug level logs to the
-                console while making HTTP requests.
+            indexes: Index to focus on.
+            verbose: Whether to print debug level logs to the console while making HTTP requests.
 
         """
         if verbose:
             logging.basicConfig(level=logging.DEBUG)
 
-        self.indexes = index
+        self.indexes = [index] if isinstance(index,str) else index # ensure index saved as a list
         self.cache = Path(cache)
         self.results: ResultList = []
 
@@ -53,8 +42,7 @@ class IndexClient:
 
         Args:
             url: URL pattern to search
-            threads: Number of threads to use. Enables
-                multi-threading only if set.
+            threads: Number of threads to use. Enables multi-threading only if set.
 
         """
         # where we would cache the results
@@ -78,8 +66,7 @@ class IndexClient:
 
         Args:
             url: URL pattern to search
-            threads: Number of threads to use. Enables
-                multi-threading only if set.
+            threads: Number of threads to use. Enables multi-threading only if set.
 
         """
         self.results = None
@@ -92,20 +79,18 @@ class IndexClient:
 
         Args:
             url: URL pattern to search
-            threads: Number of threads to use. Enables
-                multi-threading only if set.
+            threads: Number of threads to use. Enables multi-threading only if set.
 
         """
-        self.results = search_multiple_indexes(url, self.indexes, threads, self.cache / 'search_api', force_update)
+        self.results = get_multiple_indexes(url, self.indexes, threads, self.cache / 'search_api', force_update)
 
-    def download(self, threads: int = None, force_update: bool = False) -> None:
+    def download(self, threads: int = None, force_update: bool = False, parse_warc: bool = False, return_content: bool = False) -> None:
         """Download.
 
         Downloads warc extracts for every search result in the `results` attribute.
 
         Args:
-            threads: Number of threads to use. Enables
-                multi-threading only if set.
+            threads: Number of threads to use. Enables multi-threading only if set.
 
         """
-        self.results = download_multiple_results(self.results, threads, self.cache / 'records' , force_update)
+        self.results = get_multiple_records(self.results, threads, self.cache / 'records_api' , force_update, parse_warc, return_content)

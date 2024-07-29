@@ -35,16 +35,16 @@ def parse_jsonlines(lines: List[str]) -> List[Dict]:
 
 # write jsonl
 def write_jsonl(objs:List[object], path: str) -> None:
-	print(f'[write_jsonl] write to {path}')
+    print(f'[write_jsonl] write to {path}')
 
-	# check if the directory exists, if not, create it
-	directory = os.path.dirname(path)
-	if not os.path.exists(directory):
-		os.makedirs(directory)
+    # check if the directory exists, if not, create it
+    directory = os.path.dirname(path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
-	with open(path, 'w', encoding='utf-8') as f:
-		for obj in objs:
-			f.write(json.dumps(obj))
+    with open(path, 'w', encoding='utf-8') as f:
+        for obj in objs:
+            f.write(json.dumps(obj) + '\n')
 
 # read jsonl
 def read_jsonl(path: str) -> List[Dict]:
@@ -57,8 +57,7 @@ def read_jsonl(path: str) -> List[Dict]:
     else:
         return []
 
-'''
-# write object to json
+# write object to file
 def write_file(obj:object, path: str) -> None:
     print(f'[write_file] write to {path}')
 
@@ -68,9 +67,18 @@ def write_file(obj:object, path: str) -> None:
         os.makedirs(directory)
 
     with open(path, 'w', encoding='utf-8') as f:
-        # write to file
         if obj is None:
             f.write('')
         else:
             f.write(str(obj))
-'''
+
+# read file
+def read_file(path: str) -> List[str]:
+    print(f'[read_file] read {path}')
+    if os.path.exists(path):
+        with open(path, 'r', encoding='utf-8') as f:
+            # parse and return each line
+            lines = f.readlines()
+            return lines
+    else:
+        return []
