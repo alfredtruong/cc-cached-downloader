@@ -1,6 +1,7 @@
 # testing
 data/
 run.py
+athena.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

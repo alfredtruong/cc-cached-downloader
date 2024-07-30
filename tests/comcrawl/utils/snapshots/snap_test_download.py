@@ -721,7 +721,7 @@ Powered by <a href="https://github.com/webrecorder/pywb">pywb</a>
 </body>
 </html>'''
 
-snapshots['test_get_multiple_records_single_threaded 1'] = [{
+snapshots['test_get_multiple_extracts_single_threaded 1'] = [{
     'charset': 'UTF-8', 'digest': '745JGUNVPWB4L3TWJIGUQRQFTFSREJ5J', 'filename': 'crawl-data/CC-MAIN-2019-51/segments/1575540500637.40/warc/CC-MAIN-20191207160050-20191207184050-00394.warc.gz', 'html': '''<!DOCTYPE html>
 <html>
 <head>
@@ -2138,7 +2138,7 @@ Powered by <a href="https://github.com/webrecorder/pywb">pywb</a>
 </body>
 </html>''', 'languages': 'eng', 'length': '3391', 'mime': 'text/html', 'mime-detected': 'text/html', 'offset': '82652447', 'status': '200', 'timestamp': '20191114010130', 'url': 'http://index.commoncrawl.org/', 'urlkey': 'org,commoncrawl,index)/'}]
 
-snapshots['test_get_multiple_records_multi_threaded 1'] = [
+snapshots['test_get_multiple_extracts_multi_threaded 1'] = [
     {
         'charset': 'UTF-8',
         'digest': 'SVH4V5QDUS7SMXSXZYB2XWJSVDWFXUD7',

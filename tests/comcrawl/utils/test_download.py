@@ -1,5 +1,5 @@
 import pandas as pd
-from comcrawl.utils.download import request_single_record,get_multiple_records
+from comcrawl.utils.download import request_single_record,get_multiple_extracts
 
 KNOWN_RESULT = {
     'urlkey': 'org,commoncrawl,index)/',
@@ -90,14 +90,14 @@ KNOWN_RESULTS = [{'charset': 'UTF-8',
                   'urlkey': 'org,commoncrawl,index)/'}]
 
 
-def test_get_multiple_records_single_threaded(snapshot):
-    results = get_multiple_records(KNOWN_RESULTS)
+def test_get_multiple_extracts_single_threaded(snapshot):
+    results = get_multiple_extracts(KNOWN_RESULTS)
 
     snapshot.assert_match(results)
 
 
-def test_get_multiple_records_multi_threaded(snapshot):
-    results = get_multiple_records(KNOWN_RESULTS, threads=2)
+def test_get_multiple_extracts_multi_threaded(snapshot):
+    results = get_multiple_extracts(KNOWN_RESULTS, threads=2)
 
     # sorting values to counteract the random results order, which is caused
     # through the randomness in which thread download finished first

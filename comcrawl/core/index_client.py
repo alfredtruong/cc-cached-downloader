@@ -7,7 +7,7 @@ This module contains the core object of the package.
 import logging
 from pathlib import Path
 from ..utils.types import Index, IndexList, ResultList
-from ..utils import download_available_indexes,get_multiple_indexes,get_multiple_records,read_json,write_json
+from ..utils import download_available_indexes,get_multiple_indexes,get_multiple_extracts,read_json,write_json
 
 
 class IndexClient:
@@ -92,4 +92,4 @@ class IndexClient:
             threads: Number of threads to use. Enables multi-threading only if set.
 
         """
-        self.results = get_multiple_records(self.results, threads, self.cache, force_update, append_extract)
+        self.results = get_multiple_extracts(self.results, threads, self.cache, force_update, append_extract)

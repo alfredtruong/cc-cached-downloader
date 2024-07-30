@@ -85,11 +85,10 @@ def record_cache_path(result: Result, path: str = RECORDS_PATH) -> Path:
 def extract_cache_path(result: Result, path: str = RECORDS_PATH) -> Path:
     index = index_from_result(result) # get index
     domain = domain_from_result(result) # get domain
-    url = url_from_result(result) # get url
-    return Path(path) / f"extracts/{index}/{domain}/{url}/{result['digest']}.txt" # e.g. path/2024-27/hk01/fashion_hk01_com/hash[suffix].txt
+    return Path(path) / f"extracts/{index}/{domain}/{result['digest']}.txt" # e.g. path/2024-27/hk01/fashion_hk01_com/hash[suffix].txt
 
 # given search result, request record
-def request_single_record(result: Result, path: str = RECORDS_PATH, append_extract: bool = False) -> Result:
+def request_single_record(result: Result, path: str = RECORDS_PATH) -> str:
     """Downloads content for single search result.
 
     Args:
@@ -102,7 +101,7 @@ def request_single_record(result: Result, path: str = RECORDS_PATH, append_extra
         The provided result, extended by the corresponding record content string.
     """
     # testing
-    print(f'[request_single_record] path = {path},  append_extract = {append_extract}')
+    print(f'[request_single_record] path = {path}')
     if TESTING: return
 
     # default
@@ -142,20 +141,38 @@ def request_single_record(result: Result, path: str = RECORDS_PATH, append_extra
     except UnicodeDecodeError:
         print(f"[request_single_record] could not extract data from {request_url}")
 
+    # cache
+    write_file(raw_content, record_cache_path(result, path)) # contents of warc including header
+
+    # return
+    return raw_content
+
+# given search result, request record
+def get_single_record(result: Result, path: str = RECORDS_PATH, append_extract: bool = False) -> Result:
+    # get raw warc
+    cache_path = record_cache_path(result, path)
+    if cache_path.exists():
+        print(f'[get_single_record][cache] read {cache_path}')
+        raw_content = read_file(cache_path)
+    else:
+        print(f'[get_single_record][download] write {cache_path}')
+        raw_content = request_single_record(result, path)
+
     # finalize
     if len(raw_content) == 0:
-        print(f'[request_single_record][content] no content')
+        print(f'[get_single_record][content] no content')
     else:
         stripped_content = raw_content.strip().split("\r\n\r\n", 2) # strip content
         if len(stripped_content) != 3:
-            print(f'[request_single_record][content] unexpected length = {len(stripped_content)}')
+            print(f'[get_single_record][content] unexpected length = {len(stripped_content)}')
         else:
             stripped_content = stripped_content[2] # overwrite default with parsed result
             extracted_content = extract(stripped_content) # overwrite default with parsed result
+            if extracted_content is None:
+                extracted_content = ''
 
     # cache
-    #write_file(raw_content, record_cache_path(result, path))
-    write_file(extracted_content, extract_cache_path(result, path))
+    write_file(extracted_content, extract_cache_path(result, path)) # extract of contents
 
     # add 'content' key with required info
     if append_extract:
@@ -167,24 +184,24 @@ def request_single_record(result: Result, path: str = RECORDS_PATH, append_extra
     return result
 
 # read local if it exists
-def get_single_record(result: Result, path: str = RECORDS_PATH, force_update: bool = False, append_extract: bool = False) -> Result:
+def get_single_extract(result: Result, path: str = RECORDS_PATH, force_update: bool = False, append_extract: bool = False) -> Result:
     # populate res
     cache_path = extract_cache_path(result, path) # cache location for extracted info
     if cache_path.exists() and not force_update:
-        print(f'[get_single_record][cache] read {cache_path}')
+        print(f'[get_single_extract][cache] read {cache_path}')
         # add 'content' key with required info
         if append_extract:
             result['content'] = read_file(cache_path)
         else:
             result['content'] = True
     else:
-        print(f'[get_single_record][download] write {cache_path}')
-        result = request_single_record(result, path, append_extract)
+        print(f'[get_single_extract][download] write {cache_path}')
+        result = get_single_record(result, path, append_extract)
 
     # return
     return result
 
-def get_multiple_records(results: ResultList, threads: int = None, path: str = RECORDS_PATH, force_update: bool = False, append_extract: bool = False) -> ResultList:
+def get_multiple_extracts(results: ResultList, threads: int = None, path: str = RECORDS_PATH, force_update: bool = False, append_extract: bool = False) -> ResultList:
     """Downloads search results.
 
     The corresponding record for each Common Crawl results list is downloaded.
@@ -204,12 +221,12 @@ def get_multiple_records(results: ResultList, threads: int = None, path: str = R
     out: ResultList = [] # default, i.e. no results
     if threads:
         # multi-thread
-        multithreaded_download = make_multithreaded(get_single_record, threads)
+        multithreaded_download = make_multithreaded(get_single_extract, threads)
         out = multithreaded_download(results, path, force_update, append_extract)
     else:
         # single-thread
         for result in results:
-            res:Result = get_single_record(result, path, force_update, append_extract)
+            res:Result = get_single_extract(result, path, force_update, append_extract)
             out.append(res) # append
 
     # return
