@@ -81,9 +81,9 @@ class IndexClient:
             threads: Number of threads to use. Enables multi-threading only if set.
 
         """
-        self.results = get_multiple_indexes(url, self.indexes, threads, self.cache / 'search_api', force_update)
+        self.results = get_multiple_indexes(url, self.indexes, threads, self.cache, force_update)
 
-    def download(self, threads: int = None, force_update: bool = False, parse_warc: bool = False, return_content: bool = False) -> None:
+    def download(self, threads: int = None, force_update: bool = False, append_extract: bool = False) -> None:
         """Download.
 
         Downloads warc extracts for every search result in the `results` attribute.
@@ -92,4 +92,4 @@ class IndexClient:
             threads: Number of threads to use. Enables multi-threading only if set.
 
         """
-        self.results = get_multiple_records(self.results, threads, self.cache / 'records_api' , force_update, parse_warc, return_content)
+        self.results = get_multiple_records(self.results, threads, self.cache, force_update, append_extract)
