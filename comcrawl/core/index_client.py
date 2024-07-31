@@ -74,15 +74,16 @@ class IndexClient:
 
         """
         # where we would cache the results
-        cache_target = self.cache / 'index/collinfo.json'
+        cache_path = self.cache / 'index/collinfo.json'
 
         # download or read it
-        if not cache_target.exists() or force_update:
-            available_indexes = download_available_indexes() # download
-            if not cache_target.parent.exists(): cache_target.mkdir(parents=True, exist_ok=True) # ensure output directory exists
-            write_json(available_indexes, cache_target) # cache results
+        if cache_path.exists() and not force_update:
+            print(f'[get_available_indexes][cache] {cache_path}')
+            available_indexes = read_json(cache_path) # read cache
         else:
-            available_indexes = read_json(cache_target) # read cache
+            print(f'[get_available_indexes][download] {cache_path}')
+            available_indexes = download_available_indexes()
+            write_json(available_indexes, cache_path) # cache results
 
         # return it
         return available_indexes
