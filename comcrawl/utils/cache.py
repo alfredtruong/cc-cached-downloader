@@ -84,7 +84,19 @@ def read_file(path: str) -> List[str]:
     else:
         return []
     
-# read gz file
+# write gzip
+def write_gzip(content:object, path: str) -> None:
+    print(f'[write_gzip] write to {path}')
+
+    # check if the directory exists, if not, create it
+    directory = os.path.dirname(path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    with open(path, "wb") as f:
+        f.write(content)
+
+# read gzip
 def read_gzip(path: str) -> List[str]:
     # Assuming the file is saved as 'compressed_file.gz'
     with gzip.open(path, 'rb') as f:

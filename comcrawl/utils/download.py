@@ -12,7 +12,7 @@ from requests.exceptions import ReadTimeout,RequestException
 from trafilatura import extract # strip content from html files
 from urllib.parse import urlparse
 from .types import ResultList,Result
-from .cache import read_file,write_file,read_gzip
+from .cache import read_file,write_file,read_gzip,write_gzip
 from .multithreading import make_multithreaded
 from fake_useragent import UserAgent
 ua = UserAgent()
@@ -151,8 +151,7 @@ def request_single_record(result: Result, path: str = RECORDS_PATH) -> str:
         print(f"[request_single_record] could not extract data from {request_url}")
 
     # cache gz file
-    with open(gzip_cache_path(result, path), "wb") as f:
-        f.write(response.content)
+    write_gzip(response.content, gzip_cache_path(result, path))
 
     # cache raw file
     #write_file(raw_content, record_cache_path(result, path)) # contents of warc including header

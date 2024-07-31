@@ -113,7 +113,7 @@ class IndexClient:
         # read athena csvs
         ########################################
 
-        df = pd.read_csv(fr"C:\Users\alfred\Downloads\{execution_ids[index]}.csv")
+        df = pd.read_csv(self.cache / f'athena/{execution_ids[index]}.csv')
         df = df.drop_duplicates('content_digest') # unique digest
         df = df.sort_values('warc_record_length',ascending=False) # focus on large records
         pd.Series(df['warc_record_length'].values).plot() # ignore index
