@@ -164,10 +164,10 @@ def get_single_record(result: Result, path: str = RECORDS_PATH, append_extract: 
     # get raw warc
     cache_path = gzip_cache_path(result, path)
     if cache_path.exists():
-        print(f'[get_single_record][cache] read {cache_path}')
+        print(f'[get_single_record][cache] {cache_path}')
         raw_content = read_gzip(cache_path)
     else:
-        print(f'[get_single_record][download] write {cache_path}')
+        print(f'[get_single_record][download] {cache_path}')
         raw_content = request_single_record(result, path)
 
     # finalize
@@ -200,14 +200,14 @@ def get_single_extract(result: Result, path: str = RECORDS_PATH, force_update: b
     # populate res
     cache_path = extract_cache_path(result, path) # cache location for extracted info
     if cache_path.exists() and not force_update:
-        print(f'[get_single_extract][cache] read {cache_path}')
+        print(f'[get_single_extract][cache] {cache_path}')
         # add 'content' key with required info
         if append_extract:
             result['content'] = read_file(cache_path)
         else:
             result['content'] = True
     else:
-        print(f'[get_single_extract][download] write {cache_path}')
+        print(f'[get_single_extract][download] {cache_path}')
         result = get_single_record(result, path, append_extract)
 
     # return

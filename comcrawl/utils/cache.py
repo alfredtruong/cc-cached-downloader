@@ -5,7 +5,7 @@ import gzip
 
 # write json
 def write_json(obj:object, path: str) -> None:
-	print(f'[write_json] write to {path}')
+	print(f'[write_json] {path}')
 
 	# check if the directory exists, if not, create it
 	directory = os.path.dirname(path)
@@ -17,7 +17,7 @@ def write_json(obj:object, path: str) -> None:
 
 # read json
 def read_json(path: str) -> object:
-    print(f'[read_json] read {path}')
+    print(f'[read_json] {path}')
     if os.path.exists(path):
         with open(path, 'r', encoding='utf-8') as f:
             res = json.load(f)
@@ -29,14 +29,14 @@ def read_json(path: str) -> object:
 def parse_jsonlines(lines: List[str]) -> List[Dict]:
     # how many records
     total_lines = len(lines)
-    print(f"[parse_jsonlines] total lines = {total_lines}")
+    print(f"[parse_jsonlines] lines = {total_lines}")
 
     # return parsed lines
     return [json.loads(line) for line in lines]
 
 # write jsonl
 def write_jsonl(objs:List[object], path: str) -> None:
-    print(f'[write_jsonl] write to {path}')
+    print(f'[write_jsonl] {path}')
 
     # check if the directory exists, if not, create it
     directory = os.path.dirname(path)
@@ -49,7 +49,7 @@ def write_jsonl(objs:List[object], path: str) -> None:
 
 # read jsonl
 def read_jsonl(path: str) -> List[Dict]:
-    print(f'[read_jsonl] read {path}')
+    print(f'[read_jsonl] {path}')
     if os.path.exists(path):
         with open(path, 'r', encoding='utf-8') as f:
             # parse and return each line
@@ -60,7 +60,7 @@ def read_jsonl(path: str) -> List[Dict]:
 
 # write object to file
 def write_file(obj:object, path: str) -> None:
-    print(f'[write_file] write to {path}')
+    print(f'[write_file] {path}')
 
     # check if the directory exists, if not, create it
     directory = os.path.dirname(path)
@@ -75,7 +75,7 @@ def write_file(obj:object, path: str) -> None:
 
 # read file
 def read_file(path: str) -> List[str]:
-    print(f'[read_file] read {path}')
+    print(f'[read_file] {path}')
     if os.path.exists(path):
         with open(path, 'r', encoding='utf-8') as f:
             # parse and return each line
@@ -86,7 +86,7 @@ def read_file(path: str) -> List[str]:
     
 # write gzip
 def write_gzip(content:object, path: str) -> None:
-    print(f'[write_gzip] write to {path}')
+    print(f'[write_gzip] {path}')
 
     # check if the directory exists, if not, create it
     directory = os.path.dirname(path)
@@ -98,7 +98,7 @@ def write_gzip(content:object, path: str) -> None:
 
 # read gzip
 def read_gzip(path: str) -> List[str]:
-    # Assuming the file is saved as 'compressed_file.gz'
+    print(f'[read_gzip] {path}')
     with gzip.open(path, 'rb') as f:
         content = f.read()
         raw_content: str = content.decode('utf-8')
