@@ -72,7 +72,8 @@ def domain_from_result(result: Result) -> Path:
         'com,hk01'
 
     '''
-    domain = result['urlkey'].split(')/')[0] # url to dirname
+    domain = result['urlkey'].split(')/')[0] # com,eatthekiwi,store,hk)/blogs/blogthekiwi/cloudy-bay-storm-clams
+    #domain = result['urlkey'].split(',')[1] # eatthekiwi
     return domain
 
 # storage location for result
@@ -93,10 +94,12 @@ def request_single_record(result: Result, path: str = RECORDS_PATH) -> str:
 
     Args:
         result: Common Crawl Index search result from the search function.
+            result["url"]
+            result["urlkey"]
+            result["digest"]
+            result["filename"]
             result["offset"]
             result["length"]
-            result["filename"]
-            result["digest"]
     Returns:
         The provided result, extended by the corresponding record content string.
     """
@@ -159,6 +162,7 @@ def get_single_record(result: Result, path: str = RECORDS_PATH, append_extract: 
         raw_content = request_single_record(result, path)
 
     # finalize
+    extracted_content = '' # default
     if len(raw_content) == 0:
         print(f'[get_single_record][content] no content')
     else:
@@ -168,10 +172,9 @@ def get_single_record(result: Result, path: str = RECORDS_PATH, append_extract: 
         else:
             stripped_content = stripped_content[2] # overwrite default with parsed result
             extracted_content = extract(stripped_content) # overwrite default with parsed result
-            if extracted_content is None:
-                extracted_content = ''
 
     # cache
+    if extracted_content is None: extracted_content = ''
     write_file(extracted_content, extract_cache_path(result, path)) # extract of contents
 
     # add 'content' key with required info
