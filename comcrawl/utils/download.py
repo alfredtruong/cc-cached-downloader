@@ -12,7 +12,7 @@ from requests.exceptions import ReadTimeout,RequestException
 from trafilatura import extract # strip content from html files
 from urllib.parse import urlparse
 from .types import ResultList,Result
-from .cache import read_file,write_file
+from .cache import read_file,write_file,read_gzip
 from .multithreading import make_multithreaded
 from fake_useragent import UserAgent
 ua = UserAgent()
@@ -83,6 +83,12 @@ def record_cache_path(result: Result, path: str = RECORDS_PATH) -> Path:
     return Path(path) / f"records/{index}/{domain}/{result['digest']}.txt" # e.g. path/2024-27/hk01/fashion_hk01_com/hash[suffix].txt
 
 # storage location for result
+def gzip_cache_path(result: Result, path: str = RECORDS_PATH) -> Path:
+    index = index_from_result(result) # get index
+    domain = domain_from_result(result) # get domain
+    return Path(path) / f"records/{index}/{domain}/{result['digest']}.gz" # e.g. path/2024-27/hk01/fashion_hk01_com/hash[suffix].gz
+
+# storage location for result
 def extract_cache_path(result: Result, path: str = RECORDS_PATH) -> Path:
     index = index_from_result(result) # get index
     domain = domain_from_result(result) # get domain
@@ -144,8 +150,12 @@ def request_single_record(result: Result, path: str = RECORDS_PATH) -> str:
     except UnicodeDecodeError:
         print(f"[request_single_record] could not extract data from {request_url}")
 
-    # cache
-    write_file(raw_content, record_cache_path(result, path)) # contents of warc including header
+    # cache gz file
+    with open(gzip_cache_path(result, path), "wb") as f:
+        f.write(response.content)
+
+    # cache raw file
+    #write_file(raw_content, record_cache_path(result, path)) # contents of warc including header
 
     # return
     return raw_content
@@ -153,10 +163,10 @@ def request_single_record(result: Result, path: str = RECORDS_PATH) -> str:
 # given search result, request record
 def get_single_record(result: Result, path: str = RECORDS_PATH, append_extract: bool = False) -> Result:
     # get raw warc
-    cache_path = record_cache_path(result, path)
+    cache_path = gzip_cache_path(result, path)
     if cache_path.exists():
         print(f'[get_single_record][cache] read {cache_path}')
-        raw_content = read_file(cache_path)
+        raw_content = read_gzip(cache_path)
     else:
         print(f'[get_single_record][download] write {cache_path}')
         raw_content = request_single_record(result, path)

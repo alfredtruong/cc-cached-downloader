@@ -1,6 +1,7 @@
 import os
 import json
 from typing import List,Dict
+import gzip
 
 # write json
 def write_json(obj:object, path: str) -> None:
@@ -82,3 +83,12 @@ def read_file(path: str) -> List[str]:
             return lines
     else:
         return []
+    
+# read gz file
+def read_gzip(path: str) -> List[str]:
+    # Assuming the file is saved as 'compressed_file.gz'
+    with gzip.open(path, 'rb') as f:
+        content = f.read()
+        raw_content: str = content.decode('utf-8')
+
+    return raw_content
