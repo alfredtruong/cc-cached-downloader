@@ -21,11 +21,13 @@ class IndexClient:
     """
     # Athena query csv files associated to above query, do this manually
     ATHENA_QUERY_EXECUTION_IDS = {
+        # batch 0
         #'2024-30':'5ef8e286-09bd-44f2-aca5-515cf7fe9a24', # no data
         '2024-26':'f19e4aad-c0cb-432d-9997-8cba1aaa21c8',
         '2024-22':'1fc85370-deb7-4822-8c6d-ee2b102517ea',
         '2024-18':'2baf656d-2c89-4926-847e-6cddccce5216',
         '2024-10':'b8e89e1b-b648-4d7b-bfd3-b7ad53cd4c37',
+        # batch 1
         '2023-50':'8cd3e911-d04a-4f02-8000-549d70628cdf',
         '2023-40':'1b7e488a-dca4-446f-856b-c5f8ec77d4f4',
         '2023-23':'84402f88-7174-448e-9511-53a1641abc5d',
@@ -46,6 +48,27 @@ class IndexClient:
         '2021-17':'e8732d47-a592-4dca-ac57-9e79f3b00de4',
         '2021-10':'8814644a-bcfe-4f81-85cd-7c9e161da408',
         '2021-04':'2561c5dd-0f7a-4106-b321-d3659ecd01b6',
+        # batch 2
+        '2020-50':'0aa1ae0e-c9b8-4ea9-8e84-5907c6a92f02',
+        '2020-45':'a7b94a67-3aee-48ff-8a3e-4b1770273f3f',
+        '2020-40':'1bbd6ad5-21b3-4340-ba10-ed25444af869',
+        '2020-34':'108169e9-a038-4e30-b282-4d829faaf80d',
+        '2020-29':'2c136624-fc94-469a-a355-b64e80cdb160',
+        '2020-24':'c6bfa4db-f9b3-4252-aea4-ec67ecc20b59',
+        '2020-16':'088a46f4-8724-450b-87eb-4584f28e40de',
+        '2020-10':'e4972c3b-c21e-4975-96a8-335256e62205',
+        '2020-05':'b289e41e-91da-4eb6-97c5-0a0363938717',
+        '2019-51':'5b8a8c7d-020d-4f3e-9d14-3daaccfb5ff2',
+        '2019-47':'f5f23741-2062-4335-9f92-cc731388cacf',
+        '2019-43':'8a4d0d55-365c-4c53-8b8e-f127e388b3d8',
+        '2019-39':'e3054857-4bfb-49c3-a804-47be43f0a531',
+        '2019-35':'db0e7418-9066-481f-81a4-a155cf008722',
+        '2019-30':'0f4a68bb-2491-4433-af5a-00beb63eb028',
+        '2019-26':'4f130d29-bf40-48af-b8ca-1d705ee399df',
+        '2019-22':'9a637fa6-bab1-4807-8a18-ebfb2b73f8dc',
+        '2019-18':'321a0ed1-a9bc-4f21-b85e-3ef8782077ce',
+        '2019-13':'2489b2f6-fd95-4e8f-b697-aa41cd590d09',
+        '2019-09':'94fbaa98-6418-40ab-918e-704ca027d1a1',  
     }
 
     def __init__(self, index: Index = None, cache: str = 'data/', verbose: bool = False) -> None:
