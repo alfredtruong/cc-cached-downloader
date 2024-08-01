@@ -51,7 +51,7 @@ def request_single_index(index: str, url: str, path: str = SEARCH_API_PATH) -> R
     - https://github.com/ikreymer/cdx-index-client
     '''
     # testing
-    print(f'[request_single_index] path = {path}, index = {index}, url = {url}')
+    #print(f'[request_single_index] path = {path}, index = {index}, url = {url}')
     if TESTING: return
 
     # default
@@ -97,12 +97,12 @@ request_single_index('2024-26','*.hk.news.yahoo.com')
 # read local if it exists
 def get_single_index(index: str, url: str, path: str = SEARCH_API_PATH, force_update: bool = False) -> ResultList:
     # populate res
-    cache_path = search_cache_path(index, url, path) # cache location for searched info
+    cache_path = search_cache_path(index, url, path)
     if cache_path.exists() and not force_update:
-        print(f'[get_single_index][cache] read {cache_path}')
+        print(f'[get_single_index][cache] {cache_path}')
         results = read_jsonl(cache_path)
     else:
-        print(f'[get_single_index][download] write {cache_path}, index = {index}, url = {url}')
+        print(f'[get_single_index][download] {cache_path}')
         results = request_single_index(index, url, path)
 
     # return

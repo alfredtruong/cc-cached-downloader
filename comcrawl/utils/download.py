@@ -41,9 +41,6 @@ TESTING = False
 '''
 def index_from_result(result: Result) -> Path:
     '''
-    given result, strips '2024-26' from filename
-
-    e.g.
     from
         "filename": "crawl-data/CC-MAIN-2024-26/segments/1718198861545.42/warc/CC-MAIN-20240614075213-20240614105213-00661.warc.gz", 
     get
@@ -70,7 +67,6 @@ def domain_from_result(result: Result) -> Path:
         'com,hk01)/%e4%b8%96%e7%95%8c%e5%b0%88%e9%a1%8c/507167/%e8%8b%b1%e5%9c%8b%e5%88%a9%e7%89%a9%e6%b5%a6%e6%b5%b7%e6%80%aa%e7%9c%9f%e8%ba%ab%e6%98%af-%e5%9b%9e%e7%9c%8b%e8%a2%ab%e6%b2%96%e4%b8%8a%e5%b2%b8%e8%ac%8e%e4%b9%8b%e7%94%9f%e7%89%a9-%e4%ba%ba%e9%ad%9a-%e6%9b%b4%e6%81%90%e6%80%96'
     get
         'com,hk01'
-
     '''
     domain = result['urlkey'].split(')/')[0] # com,eatthekiwi,store,hk)/blogs/blogthekiwi/cloudy-bay-storm-clams
     #domain = result['urlkey'].split(',')[1] # eatthekiwi
@@ -110,7 +106,7 @@ def request_single_record(result: Result, path: str = RECORDS_PATH) -> str:
         The provided result, extended by the corresponding record content string.
     """
     # testing
-    print(f'[request_single_record] path = {path}')
+    #print(f'[request_single_record] path = {path}')
     if TESTING: return
 
     # default
@@ -150,10 +146,8 @@ def request_single_record(result: Result, path: str = RECORDS_PATH) -> str:
     except UnicodeDecodeError:
         print(f"[request_single_record] could not extract data from {request_url}")
 
-    # cache gz file
+    # cache
     write_gzip(response.content, gzip_cache_path(result, path))
-
-    # cache raw file
     #write_file(raw_content, record_cache_path(result, path)) # contents of warc including header
 
     # return
@@ -198,7 +192,7 @@ def get_single_record(result: Result, path: str = RECORDS_PATH, force_update: bo
 # read local if it exists
 def get_single_extract(result: Result, path: str = RECORDS_PATH, force_update: bool = False, append_extract: bool = False) -> Result:
     # populate res
-    cache_path = extract_cache_path(result, path) # cache location for extracted info
+    cache_path = extract_cache_path(result, path)
     if cache_path.exists() and not force_update:
         print(f'[get_single_extract][cache] {cache_path}')
         result['content'] = read_file(cache_path) if append_extract else True # add 'content' key with required info
