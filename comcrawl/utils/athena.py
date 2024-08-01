@@ -2,6 +2,7 @@
 1) kicks of remote queries on AWS Athena to query Common Crawl columnar indexes
 2) can download from AWS with code OR log into AWS Athena or S3 for direct download (faster)
 '''
+# https://julien.duponchelle.info/scrapping/ai/common-crawl
 # https://github.com/brevityinmotion/straylight/blob/main/notebooks/corefunctions.ipynb
 # https://github.com/brevityinmotion/straylight/blob/main/notebooks/tools-commoncrawl.ipynb
 

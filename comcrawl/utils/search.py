@@ -4,6 +4,8 @@ This module contains helper functions for searching through Common Crawl Indexes
 
 """
 
+# https://skeptric.com/searching-100b-pages-cdx/
+
 import json
 from pathlib import Path
 import requests
