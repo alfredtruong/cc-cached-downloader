@@ -5,6 +5,7 @@
 # https://julien.duponchelle.info/scrapping/ai/common-crawl
 # https://github.com/brevityinmotion/straylight/blob/main/notebooks/corefunctions.ipynb
 # https://github.com/brevityinmotion/straylight/blob/main/notebooks/tools-commoncrawl.ipynb
+# https://commoncrawl.org/blog/index-to-warc-files-and-urls-in-columnar-format
 
 #%%
 import os
@@ -12,13 +13,14 @@ import boto3
 import pandas as pd
 from pathlib import Path
 
-OUTPUT_DIR = Path('/home/alfred/nfs/common_crawl/athena/')
-
 #%%
 ########################################
-# configure your AWS Athena connnection
+# SETTINGS
 ########################################
-# https://commoncrawl.org/blog/index-to-warc-files-and-urls-in-columnar-format
+# WHERE TO SAVE DATA
+OUTPUT_DIR = Path('/home/alfred/nfs/common_crawl/athena/')
+
+# ATHENA CONFIG
 AWS_KEY = os.getenv('AWS_KEY') # populate your own credentials, Athena queries cost money (not much)
 AWS_SECRET = os.getenv('AWS_SECRET') # populate your own credentials, Athena queries cost money (not much)
 AWS_REGION = "us-east-1" # cc data hosted here
@@ -133,7 +135,7 @@ INDEXES = [
 
 #%%
 ########################################
-# init athena_client
+# INIT ATHENA CLIENT
 ########################################
 athena_client = boto3.client(
     "athena",
@@ -144,7 +146,7 @@ athena_client = boto3.client(
 
 #%%
 ########################################
-# query
+# QUERY
 ########################################
 query = r'''
   SELECT
@@ -168,7 +170,7 @@ query = r'''
 
 #%%
 ########################################
-# submit queries
+# SUBMIT QUERIES TO REMOTE SERVER
 ########################################
 execution_ids = {}
 for INDEX in INDEXES[25:45]:
@@ -239,10 +241,9 @@ execution_ids = {
 }
 '''
 
-
 # %%
 ########################################
-# check statuses
+# CHECK QUERY STATUS
 ########################################
 for index,execution_id in execution_ids.items():
   query_details = athena_client.get_query_execution(QueryExecutionId=execution_id)
@@ -254,7 +255,7 @@ for index,execution_id in execution_ids.items():
 #CANCELLED
 
 ########################################
-# [download results] with code
+# [DOWNLOAD] THROUGH BOTO3 / CODE
 ########################################
 # %%
 # partial results
@@ -294,7 +295,6 @@ for index,execution_id in execution_ids.items():
   df.to_pickle(OUTPUT_DIR / f'{index}.pkl')
 
 # %%
-
 # filter results
 df = pd.read_pickle(OUTPUT_DIR / f'{index}.pkl')
 df2 = df.drop_duplicates('digest') # unique digest
@@ -302,15 +302,15 @@ df3 = df2.sort_values('length',ascending=False) # focus on large records
 
 
 ########################################
-# [download results] directly from S3
+# [DOWNLOAD] DIRECTLY FROM S3
 ########################################
 #%%
 for index,execution_id in execution_ids.items():
   print(f'aws s3 cp s3://omgbananarepublic/{execution_id}.csv {OUTPUT_DIR}/')
 
 '''
-aws s3 cp s3://omgbananarepublic/0aa1ae0e-c9b8-4ea9-8e84-5907c6a92f02.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/a7b94a67-3aee-48ff-8a3e-4b1770273f3f.csv /home/alfred/nfs/common_crawl/athena/
+# aws s3 cp s3://omgbananarepublic/0aa1ae0e-c9b8-4ea9-8e84-5907c6a92f02.csv /home/alfred/nfs/common_crawl/athena/
+# aws s3 cp s3://omgbananarepublic/a7b94a67-3aee-48ff-8a3e-4b1770273f3f.csv /home/alfred/nfs/common_crawl/athena/
 aws s3 cp s3://omgbananarepublic/1bbd6ad5-21b3-4340-ba10-ed25444af869.csv /home/alfred/nfs/common_crawl/athena/
 aws s3 cp s3://omgbananarepublic/108169e9-a038-4e30-b282-4d829faaf80d.csv /home/alfred/nfs/common_crawl/athena/
 aws s3 cp s3://omgbananarepublic/2c136624-fc94-469a-a355-b64e80cdb160.csv /home/alfred/nfs/common_crawl/athena/
@@ -332,7 +332,7 @@ aws s3 cp s3://omgbananarepublic/94fbaa98-6418-40ab-918e-704ca027d1a1.csv /home/
 '''
 
 ########################################
-# read athena csvs
+# READ ATHENA CSV
 ########################################
 #%%
 df = pd.read_csv(OUTPUT_DIR / f'{execution_ids['2024-22']}.csv')
@@ -340,3 +340,10 @@ df2 = df.drop_duplicates('content_digest') # unique digest
 df3 = df2.sort_values('warc_record_length',ascending=False) # focus on large records
 pd.Series(df3['warc_record_length'].values).plot() # ignore index
 df3[df3['warc_record_length']>50_000]
+
+########################################
+# GENERATE BASH JOBS
+########################################
+#%%
+for index,execution_id in execution_ids.items():
+	print(f'nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --index {index} --threads 100 > /home/alfred/nfs/common_crawl/output/output_{index}.txt 2>&1 & # ')

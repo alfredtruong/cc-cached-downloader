@@ -59,10 +59,3 @@ ic.download(force_update=FORCE_UPDATE, threads=THREADS) # single or multithreade
 ################# [TESTING] INSPECT RESULTS
 #%%
 #[x['content'] for x in ic.results]
-
-################# [RANDOM] GENERATE BASH JOBS
-#%%
-'''
-for index,execution_id in IndexClient.ATHENA_QUERY_EXECUTION_IDS.items():
-	print(f'nohup python run.py --index {index} --threads 50 > output_{index}.txt 2>&1 &')
-'''
