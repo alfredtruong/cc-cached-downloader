@@ -14,6 +14,26 @@ from urllib.parse import urlparse
 from .types import ResultList,Result
 from .cache import read_file,write_file,read_gzip,write_gzip
 from .multithreading import make_multithreaded
+
+from fastlangid.langid import LID
+langid = LID()
+'''
+result = langid.predict('This is a test')
+print(result)
+'''
+
+# https://www.alchemysoftware.com/livedocs/ezscript/Topics/Catalyst/Language.htm
+'''
+Chinese (Simplified)								zh
+Chinese (Simplified) (zh-Hans)						zh-Hans
+Chinese (Simplified, People's Republic of China)	zh-CN
+Chinese (Simplified, Singapore)						zh-SG
+Chinese (Traditional) (zh-Hant)						zh-Hant
+Chinese (Traditional, Hong Kong S.A.R.)				zh-HK
+Chinese (Traditional, Macao S.A.R.)					zh-MO
+Chinese (Traditional, Taiwan)						zh-TW
+'''
+
 from fake_useragent import UserAgent
 ua = UserAgent()
 
@@ -91,7 +111,7 @@ def extract_cache_path(result: Result, path: str = RECORDS_PATH) -> Path:
     return Path(path) / f"extracts/{index}/{domain}/{result['digest']}.txt" # e.g. path/2024-27/hk01/fashion_hk01_com/hash[suffix].txt
 
 # given search result, request record
-def request_single_record(result: Result, path: str = RECORDS_PATH) -> str:
+def save_single_record(result: Result, path: str = RECORDS_PATH) -> str:
     """Downloads content for single search result.
 
     Args:
@@ -106,7 +126,7 @@ def request_single_record(result: Result, path: str = RECORDS_PATH) -> str:
         The provided result, extended by the corresponding record content string.
     """
     # testing
-    #print(f'[request_single_record] path = {path}')
+    #print(f'[save_single_record] path = {path}')
     if TESTING: return
 
     # default
@@ -120,7 +140,7 @@ def request_single_record(result: Result, path: str = RECORDS_PATH) -> str:
     # do request
     try:
         # request
-        print(f'[request_single_record] request_url = {request_url}')
+        print(f'[save_single_record] request_url = {request_url}')
         response = requests.get(
             request_url,
             timeout=TIMEOUT_DURATION,
@@ -140,11 +160,11 @@ def request_single_record(result: Result, path: str = RECORDS_PATH) -> str:
         raw_data: bytes = unzipped_file.read()
         raw_content: str = raw_data.decode("utf-8") # overwrite default with parsed result
     except ReadTimeout as e:
-        print(f'[request_single_record] request timed out: {e}')
+        print(f'[save_single_record] request timed out: {e}')
     except RequestException as e:
-        print(f'[request_single_record] an error occurred: {e}')
+        print(f'[save_single_record] an error occurred: {e}')
     except UnicodeDecodeError:
-        print(f"[request_single_record] could not extract data from {request_url}")
+        print(f"[save_single_record] could not extract data from {request_url}")
 
     # cache
     write_gzip(response.content, gzip_cache_path(result, path))
@@ -154,56 +174,63 @@ def request_single_record(result: Result, path: str = RECORDS_PATH) -> str:
     return raw_content
 
 # given search result, request record
-def get_single_record(result: Result, path: str = RECORDS_PATH, force_update: bool = False, append_extract: bool = False) -> Result:
+def save_single_extract(result: Result, path: str = RECORDS_PATH, force_update: bool = False) -> str:
     # get raw warc
     cache_path = gzip_cache_path(result, path)
     if cache_path.exists() and not force_update:
-        print(f'[get_single_record][cache] {cache_path}')
+        print(f'[save_single_extract][cache] {cache_path}')
         raw_content = read_gzip(cache_path)
     else:
-        print(f'[get_single_record][download] {cache_path}')
-        raw_content = request_single_record(result, path)
+        print(f'[save_single_extract][download] {cache_path}')
+        raw_content = save_single_record(result, path)
 
     # finalize
-    extracted_content = '' # default
+    extract: str = '' # default
     if len(raw_content) == 0:
-        print(f'[get_single_record][content] no content')
+        print(f'[save_single_extract][content] no content')
     else:
         stripped_content = raw_content.strip().split("\r\n\r\n", 2) # strip content
         if len(stripped_content) != 3:
-            print(f'[get_single_record][content] unexpected length = {len(stripped_content)}')
+            print(f'[save_single_extract][content] unexpected length = {len(stripped_content)}')
         else:
             stripped_content = stripped_content[2] # overwrite default with parsed result
-            extracted_content = extract(stripped_content) # overwrite default with parsed result
+            extract = extract(stripped_content) # overwrite default with parsed result
 
     # cache
-    if extracted_content is None: extracted_content = ''
-    write_file(extracted_content, extract_cache_path(result, path)) # extract of contents
-
-    # add 'content' key with required info
-    if append_extract:
-        result['content'] = extracted_content
-    else:
-        result['content'] = len(extracted_content) != 0 # True if have content else False
+    if extract is None: extract = ''
+    write_file(extract, extract_cache_path(result, path)) # extract of contents
 
     # return
-    return result
+    return extract
 
 # read local if it exists
-def get_single_extract(result: Result, path: str = RECORDS_PATH, force_update: bool = False, append_extract: bool = False) -> Result:
+def get_single_extract(result: Result, path: str = RECORDS_PATH, force_update: bool = False, detect_language: bool = False, append_extract: bool = False) -> Result:
     # populate res
     cache_path = extract_cache_path(result, path)
+    extract: str = '' # default
     if cache_path.exists() and not force_update:
         print(f'[get_single_extract][cache] {cache_path}')
-        result['content'] = read_file(cache_path) if append_extract else True # add 'content' key with required info
+        if append_extract:
+            extract = read_file(cache_path)
     else:
         print(f'[get_single_extract][download] {cache_path}')
-        result = get_single_record(result, path, force_update, append_extract)
+        extract = save_single_extract(result, path, force_update)
+
+    # should detect language?
+    if detect_language:
+        languages = langid.predict(extract)
+        result['languages'] = set(languages)
+
+    # should append full extract?
+    if append_extract:
+        result['content'] = extract # append raw extract
+    else:
+        result['content'] = len(extract) != 0 # append just a boolean, True (if have content) and False (if not)
 
     # return
     return result
 
-def get_multiple_extracts(results: ResultList, threads: int = None, path: str = RECORDS_PATH, force_update: bool = False, append_extract: bool = False) -> ResultList:
+def get_multiple_extracts(results: ResultList, threads: int = None, path: str = RECORDS_PATH, force_update: bool = False, detect_language: bool = False, append_extract: bool = False) -> ResultList:
     """Downloads search results.
 
     The corresponding record for each Common Crawl results list is downloaded.
@@ -213,10 +240,11 @@ def get_multiple_extracts(results: ResultList, threads: int = None, path: str = 
         threads: number of threads to use
         path: where to cache results
         force_update: if cache should be ignored / repopulated
-        append_extract: Should return bool in results['content]' or actual content
+        detect_language: should return set of detected languages?
+        append_extract: should return raw extract in results['content]' or actual content?
 
     Returns:
-        The provided list of results with corresponding contents in 'contents' key.
+        List of all results with corresponding contents in 'contents' key and languages in 'languages' key if requested
 
     """
     # populate results
@@ -224,11 +252,11 @@ def get_multiple_extracts(results: ResultList, threads: int = None, path: str = 
     if threads:
         # multi-thread
         multithreaded_download = make_multithreaded(get_single_extract, threads)
-        out = multithreaded_download(results, path, force_update, append_extract)
+        out = multithreaded_download(results, path, force_update, detect_language, append_extract)
     else:
         # single-thread
         for result in results:
-            res:Result = get_single_extract(result, path, force_update, append_extract)
+            res:Result = get_single_extract(result, path, force_update, detect_language, append_extract)
             out.append(res) # append
 
     # return

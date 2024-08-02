@@ -1,5 +1,5 @@
 import pandas as pd
-from comcrawl.utils.download import request_single_record,get_multiple_extracts
+from comcrawl.utils.download import save_single_record,get_multiple_extracts
 
 KNOWN_RESULT = {
     'urlkey': 'org,commoncrawl,index)/',
@@ -47,18 +47,18 @@ KNOWN_RESULT_NO_CONTENT_ERROR_HANDLING = {
     'mime': 'image/jpeg'}
 
 
-def test_request_single_record(snapshot):
-    result = request_single_record(KNOWN_RESULT)
+def test_save_single_record(snapshot):
+    result = save_single_record(KNOWN_RESULT)
     snapshot.assert_match(result["content"])
 
 
-def test_request_single_record_without_content():
-    result = request_single_record(KNOWN_RESULT_NO_CONTENT)
+def test_save_single_record_without_content():
+    result = save_single_record(KNOWN_RESULT_NO_CONTENT)
     assert result["content"] == ""
 
 
-def test_request_single_record_without_content_error_handling():
-    result = request_single_record(KNOWN_RESULT_NO_CONTENT_ERROR_HANDLING)
+def test_save_single_record_without_content_error_handling():
+    result = save_single_record(KNOWN_RESULT_NO_CONTENT_ERROR_HANDLING)
     assert result["content"] == ""
 
 

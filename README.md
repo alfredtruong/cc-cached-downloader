@@ -38,15 +38,15 @@ pip install comcrawl
 
 ### Basic
 
-The content for warc record will be available as a string in the 'content' key in each results dictionary after calling the `download` method.
+The content for warc record will be available as a string in the 'content' key in each results dictionary after calling the `populate_results` method.
 
 ```python
 from comcrawl import IndexClient
 
 client = IndexClient()
 
-client.populate_results_with_url_filter("reddit.com/r/MachineLearning/*")
-client.download()
+client.init_results_with_url_filter("reddit.com/r/MachineLearning/*")
+client.populate_results()
 
 first_record = client.results[0]["content"]
 ```
@@ -62,8 +62,8 @@ from comcrawl import IndexClient
 
 client = IndexClient()
 
-client.populate_results_with_url_filter("reddit.com/r/MachineLearning/*", threads=4)
-client.download(threads=4)
+client.init_results_with_url_filter("reddit.com/r/MachineLearning/*", threads=4)
+client.populate_results(threads=4)
 ```
 
 ### Removing duplicates & Saving
@@ -75,14 +75,14 @@ from comcrawl import IndexClient
 import pandas as pd
 
 client = IndexClient()
-client.populate_results_with_url_filter("reddit.com/r/MachineLearning/*")
+client.init_results_with_url_filter("reddit.com/r/MachineLearning/*")
 
 client.results = (pd.DataFrame(client.results)
                   .sort_values(by="timestamp")
                   .drop_duplicates("urlkey", keep="last")
                   .to_dict("records"))
 
-client.download()
+client.populate_results()
 
 pd.DataFrame(client.results).to_csv("results.csv")
 ```
@@ -97,8 +97,8 @@ By default, when instantiated, the `IndexClient` fetches a list of currently ava
 from comcrawl import IndexClient
 
 client = IndexClient(["2019-51", "2019-47"])
-client.populate_results_with_url_filter("reddit.com/r/MachineLearning/*")
-client.download()
+client.init_results_with_url_filter("reddit.com/r/MachineLearning/*")
+client.populate_results()
 ```
 
 ### Logging HTTP requests
@@ -109,8 +109,8 @@ When debugging your code, you can enable logging of all HTTP requests that are m
 from comcrawl import IndexClient
 
 client = IndexClient(verbose=True)
-client.populate_results_with_url_filter("reddit.com/r/MachineLearning/*")
-client.download()
+client.init_results_with_url_filter("reddit.com/r/MachineLearning/*")
+client.populate_results()
 ```
 
 ## Code of Conduct

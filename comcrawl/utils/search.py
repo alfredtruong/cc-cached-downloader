@@ -31,7 +31,7 @@ search_cache_path(index='2024-26', url='*.hk01.com').exists()
 '''
 
 # given index and url, do request with cc index api
-def request_single_index(index: str, url: str, path: str = SEARCH_API_PATH) -> ResultList:
+def save_single_index(index: str, url: str, path: str = SEARCH_API_PATH) -> ResultList:
     """Searches specific Common Crawl Index for given URL pattern.
 
     Args:
@@ -53,7 +53,7 @@ def request_single_index(index: str, url: str, path: str = SEARCH_API_PATH) -> R
     - https://github.com/ikreymer/cdx-index-client
     '''
     # testing
-    #print(f'[request_single_index] path = {path}, index = {index}, url = {url}')
+    #print(f'[save_single_index] path = {path}, index = {index}, url = {url}')
     if TESTING: return
 
     # default
@@ -65,7 +65,7 @@ def request_single_index(index: str, url: str, path: str = SEARCH_API_PATH) -> R
     # do request
     try:
         # request
-        print(f'[request_single_index] request_url = {request_url}')
+        print(f'[save_single_index] request_url = {request_url}')
         response = requests.get(
             request_url,
             timeout=TIMEOUT_DURATION,
@@ -82,9 +82,9 @@ def request_single_index(index: str, url: str, path: str = SEARCH_API_PATH) -> R
         if response.status_code == 200:
             results = [json.loads(line) for line in response.content.decode().splitlines()] # overwrite default with parsed result
     except ReadTimeout as e:
-        print(f'[request_single_index] request timed out: {e}')
+        print(f'[save_single_index] request timed out: {e}')
     except RequestException as e:
-        print(f'[request_single_index] an error occurred: {e}')
+        print(f'[save_single_index] an error occurred: {e}')
 
     # cache
     write_jsonl(results, search_cache_path(index, url, path))
@@ -92,8 +92,8 @@ def request_single_index(index: str, url: str, path: str = SEARCH_API_PATH) -> R
     # return
     return results
 '''
-request_single_index('2024-26','*.hk01.com')
-request_single_index('2024-26','*.hk.news.yahoo.com')
+save_single_index('2024-26','*.hk01.com')
+save_single_index('2024-26','*.hk.news.yahoo.com')
 '''
 
 # read local if it exists
@@ -105,7 +105,7 @@ def get_single_index(index: str, url: str, path: str = SEARCH_API_PATH, force_up
         results = read_jsonl(cache_path)
     else:
         print(f'[get_single_index][download] {cache_path}')
-        results = request_single_index(index, url, path)
+        results = save_single_index(index, url, path)
 
     # return
     return results

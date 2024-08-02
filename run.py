@@ -20,7 +20,7 @@ if True:
 	FORCE_UPDATE = args.force_update
 	OUTPUT_DIR = args.output_dir
 else:
-	INDEX = '2018-34'
+	INDEX = '2018-39'
 	MIN_LENGTH = None
 	MAX_LENGTH = None
 	THREADS = 50
@@ -32,29 +32,35 @@ else:
 ic = IndexClient(cache = OUTPUT_DIR) # use athena csvs
 
 #%%
-ic.populate_results_with_athena_csvs(index=INDEX, min_length = MIN_LENGTH, max_length = MAX_LENGTH)
+ic.init_results_with_athena_query_csvs(index=INDEX, min_length = MIN_LENGTH, max_length = MAX_LENGTH)
 #len(ic.results)
 
 #%%
+################# POPULATE RESULTS VIA INDEX API URL FILTER
 '''
 ic = IndexClient('2024-26',cache = OUTPUT_DIR) # only consider single crawl
-ic.populate_results_with_url_filter('*.hk01.com') # read / save
-#ic.populate_results_with_url_filter('*.hk01.com', force_update=True) # overwrite
+ic.init_results_with_url_filter('*.hk01.com') # read / save
+#ic.init_results_with_url_filter('*.hk01.com', force_update=True) # overwrite
 '''
 
 #%%
 ################# [TESTING] REDUCE RESULTS
-#ic.results = ic.results[:5]
+#ic.results = ic.results[:5] # for testing
 #len(ic.results)
 
 #%%
 ################# [TESTING] INSPECT RESULTS
-#ic.results
+#ic.results # for testing
 #ic.results[0]
 
 #%%
 ################# DOWNLOAD
-ic.download(force_update=FORCE_UPDATE, threads=THREADS) # single or multithreaded
+ic.populate_results(force_update=FORCE_UPDATE, threads=THREADS) # single or multithreaded
+#ic.populate_results(force_update=FORCE_UPDATE, threads=THREADS, append_extract=True) # actual result
+
+#%%
+################# DETECT LANGUAGE
+#ic.populate_languages(force_update=FORCE_UPDATE, threads=THREADS, append_extract=True) # bool for result
 
 ################# [TESTING] INSPECT RESULTS
 #%%

@@ -11,12 +11,11 @@ def test_comcrawl(snapshot):
     # filter out duplicates with pandas
     results_df = pd.DataFrame(client.results)
     sorted_results_df = results_df.sort_values(by="timestamp")
-    filtered_results_df = (sorted_results_df
-                           .drop_duplicates("urlkey", keep="last"))
+    filtered_results_df = sorted_results_df.drop_duplicates("urlkey", keep="last")
     client.results = filtered_results_df.to_dict("records")
 
     assert len(client.results) == 2
 
-    client.download()
+    client.populate_results()
 
     snapshot.assert_match(client.results[1])

@@ -7,7 +7,7 @@ from snapshottest import Snapshot
 
 snapshots = Snapshot()
 
-snapshots['test_request_single_record 1'] = '''<!DOCTYPE html>
+snapshots['test_save_single_record 1'] = '''<!DOCTYPE html>
 <html>
 <head>
 <link rel="stylesheet" href="/static/__shared/shared.css"/>

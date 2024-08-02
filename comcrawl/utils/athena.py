@@ -29,7 +29,7 @@ SCHEMA_NAME = 'cc-index' # follow the tutorial
 
 # common crawls
 INDEXES = [
-  '2024-30', # batch 0, no data
+  '2024-30', # batch 4, needed to rebuild ccindex table for new crawls
   '2024-26', # batch 0
   '2024-22', # batch 0
   '2024-18', # batch 0
@@ -146,7 +146,7 @@ athena_client = boto3.client(
 
 #%%
 ########################################
-# QUERY
+# QUERY (after 2018-34)
 ########################################
 query = r'''
   SELECT
@@ -170,10 +170,34 @@ query = r'''
 
 #%%
 ########################################
+# QUERY WITHOUT CONTENT_LANGUAGES (inc and before 2018-34)
+########################################
+query = r'''
+  SELECT
+    url,                                              -- full url # https://www.example.com/path/index.html
+    url_surtkey,                                      -- sortable url # com,example)/path/index.html
+    url_host_name,                                    -- url_host_name # www.example.com
+    url_host_registered_domain,                       -- short url # example.com
+    content_digest,                                   -- SHA-1 hashing of content
+    warc_filename,                                    -- which warc
+    warc_record_offset,                               -- where to start
+    warc_record_length                                -- how far to go
+  FROM "ccindex"."ccindex"
+  WHERE crawl = 'CC-MAIN-{index}'                     -- filter by crawl
+    AND subset = 'warc'                               -- filter by subset
+    AND url_host_tld = 'com'                          -- domain must end with .com
+    AND fetch_status = 200                            -- must be successful request
+   -- AND content_languages LIKE '%zho%'                -- must contain chinese
+    AND content_mime_type = 'text/html'               -- only care about htmls
+    AND url_host_name LIKE '%hk%'                     -- url_host_name must contain hk
+'''
+
+#%%
+########################################
 # SUBMIT QUERIES TO REMOTE SERVER
 ########################################
 execution_ids = {}
-for INDEX in INDEXES[45:75]:
+for INDEX in INDEXES[50:]: # i.e. from '2018-34'
   print(INDEX,end=':')
   query_execution = athena_client.start_query_execution(
       QueryString=query.format(index=INDEX),
@@ -190,8 +214,9 @@ for INDEX in INDEXES[45:75]:
 #%%
 '''
 execution_ids = {
+    # batch 4
+    '2024-30':'6a0f498f-6c48-4377-a953-d3aafb654abe',
     # batch 0
-    #'2024-30':'5ef8e286-09bd-44f2-aca5-515cf7fe9a24', # no data
     '2024-26':'f19e4aad-c0cb-432d-9997-8cba1aaa21c8',
     '2024-22':'1fc85370-deb7-4822-8c6d-ee2b102517ea',
     '2024-18':'2baf656d-2c89-4926-847e-6cddccce5216',
@@ -244,6 +269,8 @@ execution_ids = {
     '2018-47':'efc196b9-7134-4674-b6ee-e1543486c943',
     '2018-43':'d7003854-2816-4c83-b08c-66d456b9ce26',
     '2018-39':'b904f635-d706-4d19-8e4c-b93751a89caa',
+
+    # delete these
     '2018-34':'82ef359f-ed2c-4de2-b98a-ae0a04a3d45b',
     '2018-30':'6a3d0035-385c-466c-95e5-49740c0432e6',
     '2018-26':'d0489b63-4af6-415d-bf62-ea0b0de605fc',
@@ -333,44 +360,24 @@ df3 = df2.sort_values('length',ascending=False) # focus on large records
 
 
 ########################################
-# [DOWNLOAD] DIRECTLY FROM S3
+# [DOWNLOAD] DIRECTLY FROM S3 (run in bash)
 ########################################
 #%%
 for index,execution_id in execution_ids.items():
   print(f'aws s3 cp s3://omgbananarepublic/{execution_id}.csv {OUTPUT_DIR}/')
 
+#%%
 '''
 aws s3 cp s3://omgbananarepublic/22e60ea5-6973-49ef-8457-27d828815a26.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/66f2c442-be99-4cf5-a1fd-a56d584e2378.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/efc196b9-7134-4674-b6ee-e1543486c943.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/d7003854-2816-4c83-b08c-66d456b9ce26.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/b904f635-d706-4d19-8e4c-b93751a89caa.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/82ef359f-ed2c-4de2-b98a-ae0a04a3d45b.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/6a3d0035-385c-466c-95e5-49740c0432e6.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/d0489b63-4af6-415d-bf62-ea0b0de605fc.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/342a32b3-fc2a-4402-ba17-fbefc2bfbd89.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/7ad9a04d-bb77-48a1-9148-55ea6123e01f.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/76ccbb4f-b73d-43b9-a463-73f82982f6d7.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/69a0c17e-2e25-4abc-81bf-9fa043b994a3.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/cfb08e74-0eb1-4683-831a-930cd94d745d.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/b904ec38-e5e3-442a-a100-3fa5a80535df.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/2ba02255-d53a-494f-b3a4-2a51397cbd39.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/5c77520b-a666-44fb-962e-9b0df8d98d4a.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/f0dce51f-7f58-4315-aafe-c3acf54ac9bd.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/f79bf0ae-1a9c-4c28-9d00-76b41ab9f974.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/fc2c6220-80e4-4401-a3c1-967668ff3e8f.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/f0323e2e-1cba-4256-a7e3-3f4c121ea244.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/7bd7173d-ee8b-405e-a8b8-abd5e80d467f.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/128dafbc-4db5-4504-ba73-d5f1c4fca1e6.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/78e9fa9a-0cdc-4a67-b6b5-e55f19454351.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/f7c32b52-e24a-4da6-b4d8-d13b50d5b2fd.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/87ee952e-b934-4ada-bce7-3d9593c7af2d.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/089f5f93-9e7f-48c2-9d8f-d45d2be380c9.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/9fdacc88-644c-404d-87d6-8d3af21a34cb.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/be097f0f-00ae-4fd6-8595-a881d39cf815.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/fa27f0d5-c352-45ba-a3c6-a288c0173b28.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/c9bb80b4-78ba-4d80-acc4-292696da4fe0.csv /home/alfred/nfs/common_crawl/athena/
 '''
+
+#%%
+########################################
+# GENERATE BASH JOBS
+########################################
+for index,execution_id in execution_ids.items():
+	print(f'nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --index {index} --threads 100 > /home/alfred/nfs/common_crawl/output/output_{index}.txt 2>&1 & # ')
+#%%
 
 ########################################
 # READ ATHENA CSV
@@ -381,11 +388,3 @@ df2 = df.drop_duplicates('content_digest') # unique digest
 df3 = df2.sort_values('warc_record_length',ascending=False) # focus on large records
 pd.Series(df3['warc_record_length'].values).plot() # ignore index
 df3[df3['warc_record_length']>50_000]
-
-########################################
-# GENERATE BASH JOBS
-########################################
-#%%
-for index,execution_id in execution_ids.items():
-	print(f'nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --index {index} --threads 100 > /home/alfred/nfs/common_crawl/output/output_{index}.txt 2>&1 & # ')
-#%%

@@ -23,8 +23,9 @@ class IndexClient:
     # https://commoncrawl.org/errata/missing-language-classification
     # language classification added since 2018-39
     ATHENA_QUERY_EXECUTION_IDS = {
+        # batch 4
+        '2024-30':'6a0f498f-6c48-4377-a953-d3aafb654abe',
         # batch 0
-        #'2024-30':'5ef8e286-09bd-44f2-aca5-515cf7fe9a24', # no data
         '2024-26':'f19e4aad-c0cb-432d-9997-8cba1aaa21c8',
         '2024-22':'1fc85370-deb7-4822-8c6d-ee2b102517ea',
         '2024-18':'2baf656d-2c89-4926-847e-6cddccce5216',
@@ -75,7 +76,8 @@ class IndexClient:
         '2019-04':'22e60ea5-6973-49ef-8457-27d828815a26',
         '2018-51':'66f2c442-be99-4cf5-a1fd-a56d584e2378',
         '2018-47':'efc196b9-7134-4674-b6ee-e1543486c943',
-        '2018-43':'d7003854-2816-4c83-b08c-66d456b9ce26', # cc added language annotation, https://commoncrawl.org/blog/august-2018-crawl-archive-now-available
+        '2018-43':'d7003854-2816-4c83-b08c-66d456b9ce26',
+        # cc added language annotation, https://commoncrawl.org/blog/august-2018-crawl-archive-now-available
         '2018-39':'b904f635-d706-4d19-8e4c-b93751a89caa',
         '2018-34':'82ef359f-ed2c-4de2-b98a-ae0a04a3d45b', # warc format error, ‍Please note that the WARC files of August 2018 (CC-MAIN-2018-34) are affected by a WARC format error and contain an extra \r\n between HTTP header and payload content. Also the given "Content-Length" is off by 2 bytes. For more information about this bug see this post on our user forum.
         '2018-30':'6a3d0035-385c-466c-95e5-49740c0432e6',
@@ -144,7 +146,7 @@ class IndexClient:
         # return it
         return available_indexes
 
-    def populate_results_with_athena_csvs(self, index: str, min_length: int = None, max_length: int = None) -> None:
+    def init_results_with_athena_query_csvs(self, index: str, min_length: int = None, max_length: int = None) -> None:
         query = r'''
         SELECT
             url,                                              -- full url # https://www.example.com/path/index.html
@@ -189,7 +191,7 @@ class IndexClient:
         # return
         self.results = list(df.T.to_dict().values())
     
-    def populate_results_with_url_filter(self, url: str, threads: int = None, force_update: bool = False) -> None:
+    def init_results_with_url_filter(self, url: str, threads: int = None, force_update: bool = False) -> None:
         """Search.
 
         Searches the Common Crawl indexes this class was intialized with.
@@ -201,7 +203,7 @@ class IndexClient:
         """
         self.results = get_multiple_indexes(url, self.indexes, threads, self.cache, force_update)
 
-    def download(self, threads: int = None, force_update: bool = False, append_extract: bool = False) -> None:
+    def populate_results(self, threads: int = None, force_update: bool = False, detect_language: bool = False, append_extract: bool = False) -> None:
         """Download.
 
         Downloads warc extracts for every search result in the `results` attribute.
@@ -210,4 +212,4 @@ class IndexClient:
             threads: Number of threads to use. Enables multi-threading only if set.
 
         """
-        self.results = get_multiple_extracts(self.results, threads, self.cache, force_update, append_extract)
+        self.results = get_multiple_extracts(self.results, threads, self.cache, force_update, detect_language, append_extract)
