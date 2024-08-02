@@ -29,91 +29,91 @@ SCHEMA_NAME = 'cc-index' # follow the tutorial
 
 # common crawls
 INDEXES = [
-  '2024-30', # no data
-  '2024-26', # done
-  '2024-22', # done
-  '2024-18', # done
-  '2024-10', # done
-  '2023-50', # done
-  '2023-40', # done
-  '2023-23', # done
-  '2023-14', # done
-  '2023-06', # done
-  '2022-49', # done
-  '2022-40', # done
-  '2022-33', # done
-  '2022-27', # done
-  '2022-21', # done
-  '2022-05', # done
-  '2021-49', # done
-  '2021-43', # done
-  '2021-39', # done
-  '2021-31', # done
-  '2021-25', # done
-  '2021-21', # done
-  '2021-17', # done
-  '2021-10', # done
-  '2021-04', # done
-  '2020-50', #
-  '2020-45', #
-  '2020-40', #
-  '2020-34', #
-  '2020-29', #
-  '2020-24', #
-  '2020-16', #
-  '2020-10', #
-  '2020-05', #
-  '2019-51', #
-  '2019-47', #
-  '2019-43', #
-  '2019-39', #
-  '2019-35', #
-  '2019-30', #
-  '2019-26', #
-  '2019-22', #
-  '2019-18', #
-  '2019-13', #
-  '2019-09', #
-  '2019-04', #
-  '2018-51', #
-  '2018-47', #
-  '2018-43', #
-  '2018-39', #
-  '2018-34', #
-  '2018-30', #
-  '2018-26', #
-  '2018-22', #
-  '2018-17', #
-  '2018-13',
-  '2018-09',
-  '2018-05',
-  '2017-51',
-  '2017-47',
-  '2017-43',
-  '2017-39',
-  '2017-34',
-  '2017-30',
-  '2017-26',
-  '2017-22',
-  '2017-17',
-  '2017-13',
-  '2017-09',
-  '2017-04',
-  '2016-50',
-  '2016-44',
-  '2016-40',
-  '2016-36',
-  '2016-30',
-  '2016-26',
-  '2016-22',
-  '2016-18',
-  '2016-07',
-  '2015-48',
-  '2015-40',
-  '2015-35',
-  '2015-32',
-  '2015-27',
-  '2015-22',
+  '2024-30', # batch 0, no data
+  '2024-26', # batch 0
+  '2024-22', # batch 0
+  '2024-18', # batch 0
+  '2024-10', # batch 0
+  '2023-50', # batch 1
+  '2023-40', # batch 1
+  '2023-23', # batch 1
+  '2023-14', # batch 1
+  '2023-06', # batch 1
+  '2022-49', # batch 1
+  '2022-40', # batch 1
+  '2022-33', # batch 1
+  '2022-27', # batch 1
+  '2022-21', # batch 1
+  '2022-05', # batch 1
+  '2021-49', # batch 1
+  '2021-43', # batch 1
+  '2021-39', # batch 1
+  '2021-31', # batch 1
+  '2021-25', # batch 1
+  '2021-21', # batch 1
+  '2021-17', # batch 1
+  '2021-10', # batch 1
+  '2021-04', # batch 1
+  '2020-50', # batch 2
+  '2020-45', # batch 2
+  '2020-40', # batch 2
+  '2020-34', # batch 2
+  '2020-29', # batch 2
+  '2020-24', # batch 2
+  '2020-16', # batch 2
+  '2020-10', # batch 2
+  '2020-05', # batch 2
+  '2019-51', # batch 2
+  '2019-47', # batch 2
+  '2019-43', # batch 2
+  '2019-39', # batch 2
+  '2019-35', # batch 2
+  '2019-30', # batch 2
+  '2019-26', # batch 2
+  '2019-22', # batch 2
+  '2019-18', # batch 2
+  '2019-13', # batch 2
+  '2019-09', # batch 2
+  '2019-04', # batch 3
+  '2018-51', # batch 3
+  '2018-47', # batch 3
+  '2018-43', # batch 3
+  '2018-39', # batch 3
+  '2018-34', # batch 3, doesnt work, no language identifier
+  '2018-30', # batch 3, doesnt work, no language identifier
+  '2018-26', # batch 3, doesnt work, no language identifier
+  '2018-22', # batch 3, doesnt work, no language identifier
+  '2018-17', # batch 3, doesnt work, no language identifier
+  '2018-13', # batch 3
+  '2018-09', # batch 3
+  '2018-05', # batch 3
+  '2017-51', # batch 3
+  '2017-47', # batch 3
+  '2017-43', # batch 3
+  '2017-39', # batch 3
+  '2017-34', # batch 3
+  '2017-30', # batch 3
+  '2017-26', # batch 3
+  '2017-22', # batch 3
+  '2017-17', # batch 3
+  '2017-13', # batch 3
+  '2017-09', # batch 3
+  '2017-04', # batch 3
+  '2016-50', # batch 3
+  '2016-44', # batch 3
+  '2016-40', # batch 3
+  '2016-36', # batch 3
+  '2016-30', # batch 3
+  '2016-26', # batch 3
+  '2016-22', # batch 3
+  '2016-18', # batch 3
+  '2016-07', # batch 3
+  '2015-48', # batch 3
+  '2015-40', # batch 3
+  '2015-35', # batch 3
+  '2015-32', # batch 3
+  '2015-27', # batch 3
+  '2015-22', # batch 3
   '2015-18',
   '2015-14',
   '2015-11',
@@ -173,7 +173,7 @@ query = r'''
 # SUBMIT QUERIES TO REMOTE SERVER
 ########################################
 execution_ids = {}
-for INDEX in INDEXES[25:45]:
+for INDEX in INDEXES[45:75]:
   print(INDEX,end=':')
   query_execution = athena_client.start_query_execution(
       QueryString=query.format(index=INDEX),
@@ -237,7 +237,38 @@ execution_ids = {
     '2019-22':'9a637fa6-bab1-4807-8a18-ebfb2b73f8dc',
     '2019-18':'321a0ed1-a9bc-4f21-b85e-3ef8782077ce',
     '2019-13':'2489b2f6-fd95-4e8f-b697-aa41cd590d09',
-    '2019-09':'94fbaa98-6418-40ab-918e-704ca027d1a1',  
+    '2019-09':'94fbaa98-6418-40ab-918e-704ca027d1a1',
+    # batch 3
+    '2019-04':'22e60ea5-6973-49ef-8457-27d828815a26',
+    '2018-51':'66f2c442-be99-4cf5-a1fd-a56d584e2378',
+    '2018-47':'efc196b9-7134-4674-b6ee-e1543486c943',
+    '2018-43':'d7003854-2816-4c83-b08c-66d456b9ce26',
+    '2018-39':'b904f635-d706-4d19-8e4c-b93751a89caa',
+    '2018-34':'82ef359f-ed2c-4de2-b98a-ae0a04a3d45b',
+    '2018-30':'6a3d0035-385c-466c-95e5-49740c0432e6',
+    '2018-26':'d0489b63-4af6-415d-bf62-ea0b0de605fc',
+    '2018-22':'342a32b3-fc2a-4402-ba17-fbefc2bfbd89',
+    '2018-17':'7ad9a04d-bb77-48a1-9148-55ea6123e01f',
+    '2018-13':'76ccbb4f-b73d-43b9-a463-73f82982f6d7',
+    '2018-09':'69a0c17e-2e25-4abc-81bf-9fa043b994a3',
+    '2018-05':'cfb08e74-0eb1-4683-831a-930cd94d745d',
+    '2017-51':'b904ec38-e5e3-442a-a100-3fa5a80535df',
+    '2017-47':'2ba02255-d53a-494f-b3a4-2a51397cbd39',
+    '2017-43':'5c77520b-a666-44fb-962e-9b0df8d98d4a',
+    '2017-39':'f0dce51f-7f58-4315-aafe-c3acf54ac9bd',
+    '2017-34':'f79bf0ae-1a9c-4c28-9d00-76b41ab9f974',
+    '2017-30':'fc2c6220-80e4-4401-a3c1-967668ff3e8f',
+    '2017-26':'f0323e2e-1cba-4256-a7e3-3f4c121ea244',
+    '2017-22':'7bd7173d-ee8b-405e-a8b8-abd5e80d467f',
+    '2017-17':'128dafbc-4db5-4504-ba73-d5f1c4fca1e6',
+    '2017-13':'78e9fa9a-0cdc-4a67-b6b5-e55f19454351',
+    '2017-09':'f7c32b52-e24a-4da6-b4d8-d13b50d5b2fd',
+    '2017-04':'87ee952e-b934-4ada-bce7-3d9593c7af2d',
+    '2016-50':'089f5f93-9e7f-48c2-9d8f-d45d2be380c9',
+    '2016-44':'9fdacc88-644c-404d-87d6-8d3af21a34cb',
+    '2016-40':'be097f0f-00ae-4fd6-8595-a881d39cf815',
+    '2016-36':'fa27f0d5-c352-45ba-a3c6-a288c0173b28',
+    '2016-30':'c9bb80b4-78ba-4d80-acc4-292696da4fe0',
 }
 '''
 
@@ -309,26 +340,36 @@ for index,execution_id in execution_ids.items():
   print(f'aws s3 cp s3://omgbananarepublic/{execution_id}.csv {OUTPUT_DIR}/')
 
 '''
-# aws s3 cp s3://omgbananarepublic/0aa1ae0e-c9b8-4ea9-8e84-5907c6a92f02.csv /home/alfred/nfs/common_crawl/athena/
-# aws s3 cp s3://omgbananarepublic/a7b94a67-3aee-48ff-8a3e-4b1770273f3f.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/1bbd6ad5-21b3-4340-ba10-ed25444af869.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/108169e9-a038-4e30-b282-4d829faaf80d.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/2c136624-fc94-469a-a355-b64e80cdb160.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/c6bfa4db-f9b3-4252-aea4-ec67ecc20b59.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/088a46f4-8724-450b-87eb-4584f28e40de.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/e4972c3b-c21e-4975-96a8-335256e62205.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/b289e41e-91da-4eb6-97c5-0a0363938717.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/5b8a8c7d-020d-4f3e-9d14-3daaccfb5ff2.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/f5f23741-2062-4335-9f92-cc731388cacf.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/8a4d0d55-365c-4c53-8b8e-f127e388b3d8.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/e3054857-4bfb-49c3-a804-47be43f0a531.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/db0e7418-9066-481f-81a4-a155cf008722.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/0f4a68bb-2491-4433-af5a-00beb63eb028.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/4f130d29-bf40-48af-b8ca-1d705ee399df.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/9a637fa6-bab1-4807-8a18-ebfb2b73f8dc.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/321a0ed1-a9bc-4f21-b85e-3ef8782077ce.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/2489b2f6-fd95-4e8f-b697-aa41cd590d09.csv /home/alfred/nfs/common_crawl/athena/
-aws s3 cp s3://omgbananarepublic/94fbaa98-6418-40ab-918e-704ca027d1a1.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/22e60ea5-6973-49ef-8457-27d828815a26.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/66f2c442-be99-4cf5-a1fd-a56d584e2378.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/efc196b9-7134-4674-b6ee-e1543486c943.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/d7003854-2816-4c83-b08c-66d456b9ce26.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/b904f635-d706-4d19-8e4c-b93751a89caa.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/82ef359f-ed2c-4de2-b98a-ae0a04a3d45b.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/6a3d0035-385c-466c-95e5-49740c0432e6.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/d0489b63-4af6-415d-bf62-ea0b0de605fc.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/342a32b3-fc2a-4402-ba17-fbefc2bfbd89.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/7ad9a04d-bb77-48a1-9148-55ea6123e01f.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/76ccbb4f-b73d-43b9-a463-73f82982f6d7.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/69a0c17e-2e25-4abc-81bf-9fa043b994a3.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/cfb08e74-0eb1-4683-831a-930cd94d745d.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/b904ec38-e5e3-442a-a100-3fa5a80535df.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/2ba02255-d53a-494f-b3a4-2a51397cbd39.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/5c77520b-a666-44fb-962e-9b0df8d98d4a.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/f0dce51f-7f58-4315-aafe-c3acf54ac9bd.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/f79bf0ae-1a9c-4c28-9d00-76b41ab9f974.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/fc2c6220-80e4-4401-a3c1-967668ff3e8f.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/f0323e2e-1cba-4256-a7e3-3f4c121ea244.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/7bd7173d-ee8b-405e-a8b8-abd5e80d467f.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/128dafbc-4db5-4504-ba73-d5f1c4fca1e6.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/78e9fa9a-0cdc-4a67-b6b5-e55f19454351.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/f7c32b52-e24a-4da6-b4d8-d13b50d5b2fd.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/87ee952e-b934-4ada-bce7-3d9593c7af2d.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/089f5f93-9e7f-48c2-9d8f-d45d2be380c9.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/9fdacc88-644c-404d-87d6-8d3af21a34cb.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/be097f0f-00ae-4fd6-8595-a881d39cf815.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/fa27f0d5-c352-45ba-a3c6-a288c0173b28.csv /home/alfred/nfs/common_crawl/athena/
+aws s3 cp s3://omgbananarepublic/c9bb80b4-78ba-4d80-acc4-292696da4fe0.csv /home/alfred/nfs/common_crawl/athena/
 '''
 
 ########################################
@@ -347,3 +388,4 @@ df3[df3['warc_record_length']>50_000]
 #%%
 for index,execution_id in execution_ids.items():
 	print(f'nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --index {index} --threads 100 > /home/alfred/nfs/common_crawl/output/output_{index}.txt 2>&1 & # ')
+#%%

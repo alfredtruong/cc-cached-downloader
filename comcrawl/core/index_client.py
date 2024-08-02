@@ -20,6 +20,8 @@ class IndexClient:
 
     """
     # Athena query csv files associated to above query, do this manually
+    # https://commoncrawl.org/errata/missing-language-classification
+    # language classification added since 2018-39
     ATHENA_QUERY_EXECUTION_IDS = {
         # batch 0
         #'2024-30':'5ef8e286-09bd-44f2-aca5-515cf7fe9a24', # no data
@@ -68,9 +70,40 @@ class IndexClient:
         '2019-22':'9a637fa6-bab1-4807-8a18-ebfb2b73f8dc',
         '2019-18':'321a0ed1-a9bc-4f21-b85e-3ef8782077ce',
         '2019-13':'2489b2f6-fd95-4e8f-b697-aa41cd590d09',
-        '2019-09':'94fbaa98-6418-40ab-918e-704ca027d1a1',  
+        '2019-09':'94fbaa98-6418-40ab-918e-704ca027d1a1',
+        # batch 3
+        '2019-04':'22e60ea5-6973-49ef-8457-27d828815a26',
+        '2018-51':'66f2c442-be99-4cf5-a1fd-a56d584e2378',
+        '2018-47':'efc196b9-7134-4674-b6ee-e1543486c943',
+        '2018-43':'d7003854-2816-4c83-b08c-66d456b9ce26', # cc added language annotation, https://commoncrawl.org/blog/august-2018-crawl-archive-now-available
+        '2018-39':'b904f635-d706-4d19-8e4c-b93751a89caa',
+        '2018-34':'82ef359f-ed2c-4de2-b98a-ae0a04a3d45b', # warc format error, ‍Please note that the WARC files of August 2018 (CC-MAIN-2018-34) are affected by a WARC format error and contain an extra \r\n between HTTP header and payload content. Also the given "Content-Length" is off by 2 bytes. For more information about this bug see this post on our user forum.
+        '2018-30':'6a3d0035-385c-466c-95e5-49740c0432e6',
+        '2018-26':'d0489b63-4af6-415d-bf62-ea0b0de605fc',
+        '2018-22':'342a32b3-fc2a-4402-ba17-fbefc2bfbd89',
+        '2018-17':'7ad9a04d-bb77-48a1-9148-55ea6123e01f',
+        '2018-13':'76ccbb4f-b73d-43b9-a463-73f82982f6d7',
+        '2018-09':'69a0c17e-2e25-4abc-81bf-9fa043b994a3',
+        '2018-05':'cfb08e74-0eb1-4683-831a-930cd94d745d',
+        '2017-51':'b904ec38-e5e3-442a-a100-3fa5a80535df',
+        '2017-47':'2ba02255-d53a-494f-b3a4-2a51397cbd39',
+        '2017-43':'5c77520b-a666-44fb-962e-9b0df8d98d4a',
+        '2017-39':'f0dce51f-7f58-4315-aafe-c3acf54ac9bd',
+        '2017-34':'f79bf0ae-1a9c-4c28-9d00-76b41ab9f974',
+        '2017-30':'fc2c6220-80e4-4401-a3c1-967668ff3e8f',
+        '2017-26':'f0323e2e-1cba-4256-a7e3-3f4c121ea244',
+        '2017-22':'7bd7173d-ee8b-405e-a8b8-abd5e80d467f',
+        '2017-17':'128dafbc-4db5-4504-ba73-d5f1c4fca1e6',
+        '2017-13':'78e9fa9a-0cdc-4a67-b6b5-e55f19454351',
+        '2017-09':'f7c32b52-e24a-4da6-b4d8-d13b50d5b2fd',
+        '2017-04':'87ee952e-b934-4ada-bce7-3d9593c7af2d',
+        '2016-50':'089f5f93-9e7f-48c2-9d8f-d45d2be380c9',
+        '2016-44':'9fdacc88-644c-404d-87d6-8d3af21a34cb',
+        '2016-40':'be097f0f-00ae-4fd6-8595-a881d39cf815',
+        '2016-36':'fa27f0d5-c352-45ba-a3c6-a288c0173b28',
+        '2016-30':'c9bb80b4-78ba-4d80-acc4-292696da4fe0',
     }
-
+    
     def __init__(self, index: Index = None, cache: str = 'data/', verbose: bool = False) -> None:
         """Initializes the class instance.
 
@@ -139,7 +172,7 @@ class IndexClient:
         df = pd.read_csv(self.cache / f'athena/{IndexClient.ATHENA_QUERY_EXECUTION_IDS[index]}.csv')
         df = df.drop_duplicates('content_digest') # unique digest
         df = df.sort_values('warc_record_length',ascending=False) # focus on large records
-        pd.Series(df['warc_record_length'].values).plot() # ignore index
+        #pd.Series(df['warc_record_length'].values).plot() # ignore index
         if min_length: df = df[df['warc_record_length']>=min_length]
         if max_length: df = df[df['warc_record_length']<=max_length]
 

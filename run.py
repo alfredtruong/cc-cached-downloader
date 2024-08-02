@@ -20,7 +20,7 @@ if True:
 	FORCE_UPDATE = args.force_update
 	OUTPUT_DIR = args.output_dir
 else:
-	INDEX = '2024-26'
+	INDEX = '2018-34'
 	MIN_LENGTH = None
 	MAX_LENGTH = None
 	THREADS = 50
