@@ -173,7 +173,7 @@ class IndexClient:
         # return it
         return available_indexes
 
-    def init_results_with_athena_query_csvs(self, index: str, min_length: int = None, max_length: int = None) -> None:
+    def init_results_with_athena_query_csvs(self, index: str, min_length: int = None, max_length: int = None, do_plot: bool = False) -> None:
         query = r'''
         SELECT
             url,                                              -- full url # https://www.example.com/path/index.html
@@ -197,14 +197,14 @@ class IndexClient:
         ########################################
         # read athena csvs
         ########################################
-
         df = pd.read_csv(self.cache / f'athena/{IndexClient.ATHENA_QUERY_EXECUTION_IDS[index]}.csv')
-        df = df.drop_duplicates('content_digest') # unique digest
-        df = df.sort_values('warc_record_length',ascending=False) # focus on large records
-        #pd.Series(df['warc_record_length'].values).plot() # ignore index
+        df = df.drop_duplicates('content_digest') # only unique digests
+        df = df.sort_values('warc_record_length',ascending=False) # large records first
+        if do_plot: pd.Series(df['warc_record_length'].values).plot()
         if min_length: df = df[df['warc_record_length']>=min_length]
         if max_length: df = df[df['warc_record_length']<=max_length]
 
+        # rename for downloader
         df = df.rename(
             columns = {
                 'url_surtkey': 'urlkey',

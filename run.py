@@ -29,9 +29,7 @@ else:
 
 #%%
 ################# POPULATE RESULTS WITH ATHENA CSVS
-ic = IndexClient(cache = OUTPUT_DIR) # use athena csvs
-
-#%%
+ic = IndexClient(cache = OUTPUT_DIR)
 ic.init_results_with_athena_query_csvs(index=INDEX, min_length = MIN_LENGTH, max_length = MAX_LENGTH)
 #len(ic.results)
 
