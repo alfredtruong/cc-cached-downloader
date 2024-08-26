@@ -237,15 +237,71 @@ for INDEX in INDEXES[2:52]:
       },
   )
   execution_id = query_execution['QueryExecutionId']
-  print(f"'{INDEX}:'{execution_id}'")
+  print(f"'{INDEX}':'{execution_id}',")
   execution_ids[INDEX] = execution_id
 
 #%%
 '''
+# no HK in domain filter
 execution_ids = {
-    '2024-33':'deefcbdc-fa09-4c3e-be8b-c779f83026d2', # batch 6, no HK in domain filter
-    '2024-30':'cb36fb15-5e81-4f49-8140-740bd9679de7', # batch 6, no HK in domain filter
-    '2024-30_':'6a0f498f-6c48-4377-a953-d3aafb654abe', # batch 4
+    # batch 6
+    '2024-33':'deefcbdc-fa09-4c3e-be8b-c779f83026d2',
+    '2024-30':'cb36fb15-5e81-4f49-8140-740bd9679de7',
+    '2024-26':'565360b1-ceb5-465b-af18-eaf2f6ac00b6',
+    '2024-22':'46ca0de8-9cf4-4209-935c-114d073e383f',
+    '2024-18':'544069b8-419e-40fe-8723-2cd4d8dfe91b',
+    '2024-10':'69c7d697-931d-469c-baac-d4df5c891e24',
+    '2023-50':'5aa0286d-0303-4e62-8381-9bae17dcbe23',
+    '2023-40':'7b90b3ed-8032-40e1-b48c-9ffca563ac12',
+    '2023-23':'7581324f-f4db-4839-ab68-924d7952134e',
+    '2023-14':'f41161b2-e551-494b-b8f0-8be1e41bd847',
+    '2023-06':'68ca8223-d2de-4cdb-a729-7fd6c9dff8da',
+    '2022-49':'dadbe941-8894-49ae-abdb-588a468c45f4',
+    '2022-40':'26e2331a-d570-45fb-bdb3-749fac5229b1',
+    '2022-33':'c68263f6-c50e-4362-91f0-d4ca9bea9c04',
+    '2022-27':'bb054706-54d1-4bbf-92f8-4f9bbc1add67',
+    '2022-21':'145b3804-621a-48cf-b8f5-0cc8d178a639',
+    '2022-05':'66eb2116-9e4a-4b6f-b70c-27c7b48c9815',
+    '2021-49':'a794541e-3255-4aed-92c2-b0a6ae8f0c3c',
+    '2021-43':'7e920324-d25f-43b7-9340-328ed1e3acf2',
+    '2021-39':'220a787d-2560-4f1e-95e8-29f4be678973',
+    '2021-31':'330d7819-8706-4f66-b676-f6920bec7c1a',
+    '2021-25':'0714ec35-6ea1-4877-a2a3-7bd3b60fbafb',
+    '2021-21':'b4e64006-7016-4b12-af65-a292bf83b83a',
+    '2021-17':'7486eefa-56c8-4162-a1a5-cda1882ed9d5',
+    '2021-10':'7987d7a5-6d1a-4ca0-8fe0-8c63a3a65e71',
+    '2021-04':'0cbe5ac1-1076-4671-9b33-510898f78aca',
+    '2020-50':'17e9f840-ca1b-4916-b4ba-01cd2f2432f5',
+    '2020-45':'db8a7adc-26d0-4a65-9e7c-4a221d69f1a2',
+    '2020-40':'63775e36-122e-4fdd-86ff-cf17b0f9237d',
+    '2020-34':'32bc0bde-6f28-4f27-9bd3-39fcdbd43952',
+    '2020-29':'a0c984ab-1342-42f1-9dab-e4a353d0e2b7',
+    '2020-24':'cea84eec-391e-4e0b-9c28-3206bf2bbd25',
+    '2020-16':'600328f6-38dc-42e4-ac8a-7e160d33c8b1',
+    '2020-10':'f624adaa-cf5c-4604-8c1f-0d974da9230a',
+    '2020-05':'6b373ad0-7f29-48f1-a563-c4d80128591f',
+    '2019-51':'f36f861f-ab3c-49fb-a019-f88f2d5390c2',
+    '2019-47':'aa33c540-9f3e-4bb8-b7da-d9a07750c803',
+    '2019-43':'ee97c786-885f-4cba-8af2-044aa38343a3',
+    '2019-39':'2317f096-2e16-41ae-a09b-69b50f702380',
+    '2019-35':'a344bdab-4ad7-4eaa-b7cd-d7121d0279ea',
+    '2019-30':'6848928b-4634-4a97-9944-4c9f7e3f03de',
+    '2019-26':'c80dce22-a9c4-4253-83a0-4d89cb4c0afc',
+    '2019-22':'a019e62c-461b-472c-b614-f38fa7681de7',
+    '2019-18':'44b6e9cd-f586-456c-aeda-fbc66c6504df',
+    '2019-13':'bb7bf540-67f7-4a5d-b88c-83d55e70d965',
+    '2019-09':'a2b3bf98-e98f-40b1-881e-81ba8c720ce3',
+    '2019-04':'6e3e0db5-6594-4caf-b8b6-823c560d1374',
+    '2018-51':'3549d3eb-8911-4666-9511-98e947b96f24',
+    '2018-47':'8f242c9a-6215-40dc-bb16-71e622edb5d0',
+    '2018-43':'4e6ec6db-df2c-4b55-8854-9d0faf04c800',
+    '2018-39':'034a5b1a-d03a-4096-a28c-3c23bf536434',
+    '2018-34':'e303ff3e-183f-4392-9037-4538260448a9', # no data?!
+}
+
+# with HK in domain filter
+execution_ids = {
+    '2024-30':'6a0f498f-6c48-4377-a953-d3aafb654abe', # batch 4
     '2024-26':'f19e4aad-c0cb-432d-9997-8cba1aaa21c8', # batch 0
     '2024-22':'1fc85370-deb7-4822-8c6d-ee2b102517ea', # batch 0
     '2024-18':'2baf656d-2c89-4926-847e-6cddccce5216', # batch 0
@@ -366,6 +422,7 @@ for index,execution_id in execution_ids.items():
 #FAILED
 #CANCELLED
 
+#%%
 if False:
   ########################################
   # [DOWNLOAD CSV FILES] THROUGH BOTO3 / CODE
@@ -413,18 +470,14 @@ if False:
   df2 = df.drop_duplicates('digest') # unique digest
   df3 = df2.sort_values('length',ascending=False) # focus on large records
 
-########################################
-# [DOWNLOAD CSV FILES] DIRECTLY FROM S3 (run in bash)
-########################################
-'''
-# generate aws-cli bash calls and run
-aws s3 cp s3://omgbananarepublic/22e60ea5-6973-49ef-8457-27d828815a26.csv /home/alfred/nfs/common_crawl/athena/
-'''
 #%%
-for index,execution_id in execution_ids.items():
-  cmd = f'aws s3 cp s3://omgbananarepublic/{execution_id}.csv {OUTPUT_DIR}/'
-  os.system(cmd)
-  print(cmd)
+########################################
+# [MASS DOWNLOAD CSVS] DIRECTLY FROM S3
+########################################
+# create # aws s3 cp s3://omgbananarepublic/22e60ea5-6973-49ef-8457-27d828815a26.csv /home/alfred/nfs/common_crawl/athena/
+cmds = [f'aws s3 cp s3://omgbananarepublic/{execution_id}.csv {OUTPUT_DIR}/' for index,execution_id in execution_ids.items()] # gen
+for cmd in cmds: print(cmd) # show
+for cmd in cmds: os.system(cmd) # run
 
 #%%
 ########################################
@@ -433,10 +486,6 @@ for index,execution_id in execution_ids.items():
 for index,execution_id in execution_ids.items():
 	print(f'nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --index {index} --threads 100 > /home/alfred/nfs/common_crawl/output/output_{index}.txt 2>&1 & # ')
 #%%
-'''
-nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --index 2024-33 --threads 100 > /home/alfred/nfs/common_crawl/output/output_2024-33.txt 2>&1 & # 
-nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --index 2024-30 --threads 100 > /home/alfred/nfs/common_crawl/output/output_2024-30.txt 2>&1 & # 
-'''
 
 ########################################
 # [DEBUG] READ ATHENA CSV

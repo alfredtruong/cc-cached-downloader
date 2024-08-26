@@ -11,9 +11,13 @@ def write_json(obj:object, path: str) -> None:
         directory = os.path.dirname(path)
         if not os.path.exists(directory):
             os.makedirs(directory)
+            os.chmod(directory, 0o777)
 
         with open(path, 'w', encoding='utf-8') as f:
             f.write(json.dumps(obj))
+
+        os.chmod(path, 0o777)
+
     except Exception as e:
 	    print(f'[write_json] exception {e}')
 
@@ -47,10 +51,14 @@ def write_jsonl(objs:List[object], path: str) -> None:
         directory = os.path.dirname(path)
         if not os.path.exists(directory):
             os.makedirs(directory)
+            os.chmod(directory, 0o777)
 
         with open(path, 'w', encoding='utf-8') as f:
             for obj in objs:
                 f.write(json.dumps(obj) + '\n')
+
+        os.chmod(path, 0o777)
+
     except Exception as e:
 	    print(f'[write_jsonl] exception {e}')
 
@@ -75,12 +83,16 @@ def write_file(obj:object, path: str) -> None:
         directory = os.path.dirname(path)
         if not os.path.exists(directory):
             os.makedirs(directory)
+            os.chmod(directory, 0o777)
 
         with open(path, 'w', encoding='utf-8') as f:
             if obj is None:
                 f.write('')
             else:
                 f.write(str(obj))
+
+        os.chmod(path, 0o777)
+
     except Exception as e:
 	    print(f'[write_file] exception {e}')
     
@@ -105,9 +117,13 @@ def write_gzip(content:object, path: str) -> None:
         directory = os.path.dirname(path)
         if not os.path.exists(directory):
             os.makedirs(directory)
+            os.chmod(directory, 0o777)
 
         with open(path, "wb") as f:
             f.write(content)
+
+        os.chmod(path, 0o777)
+
     except Exception as e:
 	    print(f'[write_gzip] exception {e}')
         
