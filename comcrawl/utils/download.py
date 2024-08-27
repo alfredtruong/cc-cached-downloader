@@ -12,7 +12,7 @@ from requests.exceptions import ReadTimeout,RequestException
 from trafilatura import extract # strip content from html files
 from urllib.parse import urlparse
 from .types import ResultList,Result
-from .cache import read_file,write_file,read_gzip,write_gzip
+from .cache import write_file,read_gzip,write_gzip,write_jsonl
 from .multithreading import make_multithreaded
 
 from fastlangid.langid import LID
@@ -40,8 +40,6 @@ ua = UserAgent()
 
 TIMEOUT_DURATION = 60
 URL_TEMPLATE = "https://data.commoncrawl.org/{filename}"
-RECORDS_PATH = 'data/records/'
-TESTING = False
 
 '''
 {
@@ -92,26 +90,31 @@ def domain_from_result(result: Result) -> Path:
     #domain = result['urlkey'].split(',')[1] # eatthekiwi
     return domain
 
-# storage location for result
-def record_cache_path(result: Result, path: str = RECORDS_PATH) -> Path:
+# storage location for raw result
+def record_cache_path(result: Result, path: str) -> Path:
     index = index_from_result(result) # get index
     domain = domain_from_result(result) # get domain
     return Path(path) / f"records/{index}/{domain}/{result['digest']}.txt" # e.g. path/2024-27/hk01/fashion_hk01_com/hash[suffix].txt
 
-# storage location for result
-def gzip_cache_path(result: Result, path: str = RECORDS_PATH) -> Path:
+# storage location for gzip of raw result
+def gzip_cache_path(result: Result, path: str) -> Path:
     index = index_from_result(result) # get index
     domain = domain_from_result(result) # get domain
     return Path(path) / f"records/{index}/{domain}/{result['digest']}.gz" # e.g. path/2024-27/hk01/fashion_hk01_com/hash[suffix].gz
 
-# storage location for result
-def extract_cache_path(result: Result, path: str = RECORDS_PATH) -> Path:
+# storage location for extract of result
+def extract_cache_path(result: Result, path: str) -> Path:
     index = index_from_result(result) # get index
     domain = domain_from_result(result) # get domain
     return Path(path) / f"extracts/{index}/{domain}/{result['digest']}.txt" # e.g. path/2024-27/hk01/fashion_hk01_com/hash[suffix].txt
 
+# storage location for jsonl containing all results
+def jsonl_cache_path(result: Result, path: str) -> Path:
+    index = index_from_result(result) # get index
+    return Path(path) / f"extracts/{index}.jsonl" # e.g. path/2024-27.jsonl
+
 # given search result, request record
-def save_single_record(result: Result, path: str = RECORDS_PATH) -> str:
+def save_single_record(result: Result, path: str) -> None:
     """Downloads content for single search result.
 
     Args:
@@ -127,10 +130,9 @@ def save_single_record(result: Result, path: str = RECORDS_PATH) -> str:
     """
     # testing
     #print(f'[save_single_record] path = {path}')
-    if TESTING: return
 
     # default
-    raw_content: str = "" # no content
+    #raw_content: str = "" # no content
 
     # build request
     request_url = URL_TEMPLATE.format(filename=result["filename"])
@@ -155,82 +157,82 @@ def save_single_record(result: Result, path: str = RECORDS_PATH) -> str:
         # ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
 
         # parse
-        zipped_file = io.BytesIO(response.content)
-        unzipped_file = gzip.GzipFile(fileobj=zipped_file)
-        raw_data: bytes = unzipped_file.read()
-        raw_content: str = raw_data.decode("utf-8") # overwrite default with parsed result
+        #zipped_file = io.BytesIO(response.content)
+        #unzipped_file = gzip.GzipFile(fileobj=zipped_file)
+        #raw_data: bytes = unzipped_file.read()
+        #raw_content: str = raw_data.decode("utf-8") # overwrite default with parsed result
+
+        # cache
+        write_gzip(response.content, gzip_cache_path(result, path))
+
     except ReadTimeout as e:
         print(f'[save_single_record] request timed out: {e}')
     except RequestException as e:
         print(f'[save_single_record] an error occurred: {e}')
-    except UnicodeDecodeError:
-        print(f"[save_single_record] could not extract data from {request_url}")
+    #except UnicodeDecodeError:
+    #    print(f"[save_single_record] could not extract data from {request_url}")
 
     # cache
-    write_gzip(response.content, gzip_cache_path(result, path))
+    #write_gzip(response.content, gzip_cache_path(result, path))
     #write_file(raw_content, record_cache_path(result, path)) # contents of warc including header
 
     # return
-    return raw_content
+    #return raw_content
 
 # given search result, request record
-def save_single_extract(result: Result, path: str = RECORDS_PATH, force_update: bool = False) -> str:
-    # get raw warc
+def save_single_extract(result: Result, path: str) -> str:
+    # ensure we have warc gz
     cache_path = gzip_cache_path(result, path)
-    if cache_path.exists() and not force_update:
-        print(f'[save_single_extract][cache] {cache_path}')
-        raw_content = read_gzip(cache_path)
-    else:
-        print(f'[save_single_extract][download] {cache_path}')
-        raw_content = save_single_record(result, path)
+    if not cache_path.exists():
+        #print(f'[save_single_extract][download] {cache_path}')
+        save_single_record(result, path)
 
-    # finalize
-    extract: str = '' # default
+    # parse warc gz
+    raw_content:str = read_gzip(cache_path)
+
+    # extract contents
+    s: str = '' # default
     if len(raw_content) == 0:
-        print(f'[save_single_extract][content] no content')
+        print(f'[save_single_extract] no content')
+        print(raw_content)
     else:
         stripped_content = raw_content.strip().split("\r\n\r\n", 2) # strip content
         if len(stripped_content) != 3:
-            print(f'[save_single_extract][content] unexpected length = {len(stripped_content)}')
+            print(f'[save_single_extract] unexpected length = {len(stripped_content)}')
+            print(len(stripped_content))
         else:
             stripped_content = stripped_content[2] # overwrite default with parsed result
-            extract = extract(stripped_content) # overwrite default with parsed result
+            s = extract(stripped_content) # overwrite default with parsed result
 
     # cache
-    if extract is None: extract = ''
-    write_file(extract, extract_cache_path(result, path)) # extract of contents
+    if s is None: s = ''
+    filepath = extract_cache_path(result, path)
+    if False: write_file(s, filepath) # write content extract into separate file
+    if True: write_jsonl([{'filepath':str(filepath),'content':s}],jsonl_cache_path(result,path)) # write content extract to jsonl
 
     # return
-    return extract
+    return s
 
 # read local if it exists
-def get_single_extract(result: Result, path: str = RECORDS_PATH, force_update: bool = False, detect_language: bool = False, append_extract: bool = False) -> Result:
-    # populate res
+def get_single_extract(result: Result, path: str) -> Result:
+    # bail if already cached, i.e. content already extracted
     cache_path = extract_cache_path(result, path)
-    extract: str = '' # default
-    if cache_path.exists() and not force_update:
+    if result['cached']:
         print(f'[get_single_extract][cache] {cache_path}')
-        if append_extract:
-            extract = read_file(cache_path)
-    else:
-        print(f'[get_single_extract][download] {cache_path}')
-        extract = save_single_extract(result, path, force_update)
+        return result
+    # otherwise get it
 
-    # should detect language?
-    if detect_language:
-        languages = langid.predict(extract)
-        result['languages'] = set(languages)
+    # populate res
+    print(f'[get_single_extract][extract] {cache_path}')
+    save_single_extract(result, path)
 
-    # should append full extract?
-    if append_extract:
-        result['content'] = extract # append raw extract
-    else:
-        result['content'] = len(extract) != 0 # append just a boolean, True (if have content) and False (if not)
+    # indicate done
+    result['cached'] = True
 
     # return
     return result
 
-def get_multiple_extracts(results: ResultList, threads: int = None, path: str = RECORDS_PATH, force_update: bool = False, detect_language: bool = False, append_extract: bool = False) -> ResultList:
+def get_multiple_extracts(results: ResultList, path: str, threads: int = None) -> ResultList:
     """Downloads search results.
 
     The corresponding record for each Common Crawl results list is downloaded.
@@ -239,9 +241,6 @@ def get_multiple_extracts(results: ResultList, threads: int = None, path: str = 
         results: list of Common Crawl search results
         threads: number of threads to use
         path: where to cache results
-        force_update: if cache should be ignored / repopulated
-        detect_language: should return set of detected languages?
-        append_extract: should return raw extract in results['content]' or actual content?
 
     Returns:
         List of all results with corresponding contents in 'contents' key and languages in 'languages' key if requested
@@ -252,11 +251,11 @@ def get_multiple_extracts(results: ResultList, threads: int = None, path: str = 
     if threads:
         # multi-thread
         multithreaded_download = make_multithreaded(get_single_extract, threads)
-        out = multithreaded_download(results, path, force_update, detect_language, append_extract)
+        out = multithreaded_download(results, path)
     else:
         # single-thread
         for result in results:
-            res:Result = get_single_extract(result, path, force_update, detect_language, append_extract)
+            res:Result = get_single_extract(result, path)
             out.append(res) # append
 
     # return
