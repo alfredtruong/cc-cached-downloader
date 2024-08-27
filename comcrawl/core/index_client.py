@@ -222,7 +222,7 @@ class IndexClient:
 
         # download or read it
         if cache_path.exists():
-            #print(f'[get_available_indexes][cache] {cache_path}')
+            print(f'[get_available_indexes][cache] {cache_path}')
             available_indexes = read_json(cache_path) # read cache
         else:
             print(f'[get_available_indexes][download] {cache_path}')

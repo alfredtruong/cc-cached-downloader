@@ -97,7 +97,7 @@ def get_single_index(index: str, url: str, path: str) -> ResultList:
     # populate res
     cache_path = search_cache_path(index, url, path)
     if cache_path.exists():
-        #print(f'[get_single_index][cache] {cache_path}')
+        print(f'[get_single_index][cache] {cache_path}')
         results = read_jsonl(cache_path)
     else:
         print(f'[get_single_index][download] {cache_path}')

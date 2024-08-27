@@ -217,12 +217,14 @@ def get_single_extract(result: Result, path: str) -> Result:
     # bail if already cached, i.e. content already extracted
     cache_path = extract_cache_path(result, path)
     if result['cached']:
-        print(f'[get_single_extract][cache] {cache_path}')
+        #print(f'[get_single_extract][cache] {cache_path}')
+        print('.')
         return result
     # otherwise get it
 
     # populate res
-    print(f'[get_single_extract][extract] {cache_path}')
+    #print(f'[get_single_extract][extract] {cache_path}')
+    print('x')
     save_single_extract(result, path)
 
     # indicate done

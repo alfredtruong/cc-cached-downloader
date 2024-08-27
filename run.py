@@ -9,7 +9,7 @@ if True:
 	parser.add_argument('--min_length', help='min record size', type=int, default=None)
 	parser.add_argument('--max_length', help='max record size', type=int, default=None)
 	parser.add_argument('--threads', help='number of threads', type=int, default=None)
-	parser.add_argument('--outdir', help='where to save output', type=str, default='/home/alfred/nfs/common_crawl')
+	parser.add_argument('--outdir', help='where to save output', type=str, default='/home/alfred/nfs/cc')
 	args = parser.parse_args()
 
 	INDEX = args.index
@@ -21,9 +21,9 @@ else:
 	INDEX = '2018-39'
 	MIN_LENGTH = None
 	MAX_LENGTH = None
-	THREADS = None # 25
-	OUTPUT_DIR = '/home/alfred/nfs/common_crawl'
-	OUTPUT_DIR = '/home/alfred/nfs/common_crawl_2'
+	THREADS = 50
+	OUTPUT_DIR = '/home/alfred/nfs/cc_zho_hk'
+	OUTPUT_DIR = '/home/alfred/nfs/cc_zho'
 
 #%%
 ################# POPULATE RESULTS WITH ATHENA CSVS
