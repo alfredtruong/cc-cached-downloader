@@ -5,7 +5,7 @@ to manage multi-threading.
 
 """
 
-from typing import Callable, List
+from typing import Callable
 from concurrent import futures
 
 
@@ -23,7 +23,7 @@ def make_multithreaded(func: Callable, threads: int) -> Callable:
 
     """
 
-    def multithreaded_function(input_list: List, *args) -> List:
+    def multithreaded_function(input_list: list, *args) -> list:
         """Executes function on input list using multiple threads.
 
         Args:
