@@ -97,7 +97,7 @@ def test_get_multiple_extracts_single_threaded(snapshot):
 
 
 def test_get_multiple_extracts_multi_threaded(snapshot):
-    results = get_multiple_extracts(KNOWN_RESULTS, threads=2)
+    results = get_multiple_extracts(KNOWN_RESULTS, 'data/', threads=2)
 
     # sorting values to counteract the random results order, which is caused
     # through the randomness in which thread download finished first

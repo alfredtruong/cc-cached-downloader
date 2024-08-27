@@ -25,12 +25,11 @@ you can either gather these by
 from comcrawl.core import IndexClient
 
 # crawl of interest + output location
-ic = IndexClient('2024-26',cache = '/home/alfred/nfs/common_crawl')
+ic = IndexClient('2024-26', outdir = '/home/alfred/nfs/common_crawl')
 
 # identify records to scrape (populate `ic.results` list of records to download)
 ic.init_results_with_url_filter("reddit.com/r/MachineLearning/*")
 #ic.init_results_with_url_filter('*.hk01.com') # read / save
-#ic.init_results_with_url_filter('*.hk01.com', force_update=True) # overwrite
 
 # downloads and extracts each record
 ic.populate_results()
@@ -42,7 +41,7 @@ first_record = ic.results[0]["content"]
 from comcrawl.core import IndexClient
 
 # crawl of interest + output location
-ic = IndexClient(cache = '/home/alfred/nfs/common_crawl') # use athena csvs
+ic = IndexClient(outdir = '/home/alfred/nfs/common_crawl') # use athena csvs
 
 # identify records to scrape (populate `ic.results` list of records to download)
 ic.init_results_with_athena_query_csvs(index=INDEX, min_length = MIN_LENGTH, max_length = MAX_LENGTH)
