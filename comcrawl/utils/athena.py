@@ -21,7 +21,7 @@ from pathlib import Path
 # SETTINGS
 ########################################
 # where to save data
-OUTPUT_DIR = Path('/home/alfred/nfs/common_crawl/athena/')
+OUTPUT_DIR = Path('/home/alfred/nfs/cc_zho/athena/')
 
 # aws config (can also do `aws configure` as per https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration
 from dotenv import load_dotenv
@@ -478,7 +478,7 @@ if False:
 ########################################
 # [MASS DOWNLOAD CSVS] DIRECTLY FROM S3
 ########################################
-# create # aws s3 cp s3://omgbananarepublic/22e60ea5-6973-49ef-8457-27d828815a26.csv /home/alfred/nfs/common_crawl/athena/
+# create # aws s3 cp s3://omgbananarepublic/22e60ea5-6973-49ef-8457-27d828815a26.csv /home/alfred/nfs/cc_zho/athena/
 cmds = [f'aws s3 cp s3://omgbananarepublic/{execution_id}.csv {OUTPUT_DIR}/' for index,execution_id in execution_ids.items()] # gen
 for cmd in cmds: print(cmd) # show
 for cmd in cmds: os.system(cmd) # run
@@ -488,7 +488,7 @@ for cmd in cmds: os.system(cmd) # run
 # [GENERATE BASH] FOR MASS DOWNLOAD JOBS
 ########################################
 for index,execution_id in execution_ids.items():
-	print(f'nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --index {index} --threads 100 > /home/alfred/nfs/common_crawl/output/output_{index}.txt 2>&1 & # ')
+	print(f'nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --index {index} --threads 100 > /home/alfred/nfs/cc_zho/output/output_{index}.txt 2>&1 & # ')
 #%%
 
 ########################################
