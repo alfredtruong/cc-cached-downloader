@@ -7,7 +7,7 @@ This module contains the core object of the package.
 import logging
 from pathlib import Path
 from ..utils.types import Index, IndexList, ResultList
-from ..utils import download_available_indexes,get_multiple_indexes,get_multiple_extracts,read_json,write_json,read_jsonl,extract_cache_path
+from ..utils import download_available_indexes,get_multiple_indexes,get_multiple_extracts,read_json,write_json,read_jsonl,extract_cache_path,jsonl_cache_path
 import pandas as pd
 
 # with HK in domain filter
@@ -276,9 +276,8 @@ class IndexClient:
         results = list(df.T.to_dict().values())
 
         # get cached results
-        #breakpoint()
-        cached_results = read_jsonl(self.outdir / f'extracts/{index}.jsonl') # read jsonl
-        cached_filepaths = set(x['filepath'] for x in cached_results) # extract filepath identifiers
+        cached_filepaths = read_jsonl(jsonl_cache_path(index,self.outdir),'filepath') # read jsonl
+        cached_filepaths = set(cached_filepaths) # extract filepath identifiers
 
         # add cache status to results
         cache_counter = 0

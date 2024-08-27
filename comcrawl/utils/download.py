@@ -11,7 +11,7 @@ import requests
 from requests.exceptions import ReadTimeout,RequestException
 from trafilatura import extract # strip content from html files
 from urllib.parse import urlparse
-from .types import ResultList,Result
+from .types import Index,ResultList,Result
 from .cache import write_file,read_gzip,write_gzip,write_jsonl
 from .multithreading import make_multithreaded
 
@@ -109,9 +109,8 @@ def extract_cache_path(result: Result, path: str) -> Path:
     return Path(path) / f"extracts/{index}/{domain}/{result['digest']}.txt" # e.g. path/2024-27/hk01/fashion_hk01_com/hash[suffix].txt
 
 # storage location for jsonl containing all results
-def jsonl_cache_path(result: Result, path: str) -> Path:
-    index = index_from_result(result) # get index
-    return Path(path) / f"extracts/{index}.jsonl" # e.g. path/2024-27.jsonl
+def jsonl_cache_path(index: Index, path: str) -> Path:
+    return Path(path) / f"extracts/{index}/{index}.jsonl" # e.g. path/2024-27.jsonl
 
 # given search result, request record
 def save_single_record(result: Result, path: str) -> None:
@@ -206,9 +205,9 @@ def save_single_extract(result: Result, path: str) -> str:
 
     # cache
     if s is None: s = ''
-    filepath = extract_cache_path(result, path)
+    filepath = extract_cache_path(result, path) # id for record
     if False: write_file(s, filepath) # write content extract into separate file
-    if True: write_jsonl([{'filepath':str(filepath),'content':s}],jsonl_cache_path(result,path)) # write content extract to jsonl
+    if True: write_jsonl([{'filepath':str(filepath),'content':s}],jsonl_cache_path(index_from_result(result),path)) # write content extract to jsonl
 
     # return
     return s
