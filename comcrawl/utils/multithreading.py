@@ -52,7 +52,7 @@ def make_multithreaded(func: Callable, threads: int) -> Callable:
             for future in futures.as_completed(future_to_input_item):
                 result = future.result()
 
-                if isinstance(result, List):
+                if isinstance(result, list):
                     results.extend(result)
                 else:
                     results.append(result)
