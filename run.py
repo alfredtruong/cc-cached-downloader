@@ -1,9 +1,10 @@
 #%%
 import argparse
 from comcrawl.core import IndexClient
+import sys
 
 ################# SETTINGS
-if True:
+if len(sys.argv) > 2:
 	parser = argparse.ArgumentParser(description='cc-cached-downloader')
 	parser.add_argument('--index', help='cc index identifier', type=str, default='2024-26')
 	parser.add_argument('--min_length', help='min record size', type=int, default=None)

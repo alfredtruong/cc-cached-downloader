@@ -1,3 +1,4 @@
+#%%
 import os
 import json
 import gzip
@@ -13,12 +14,15 @@ import time
 
 lock = threading.Lock()
 
+################################################################################
+# json
+################################################################################
 # write json
 def write_json(obj:object, path: str) -> None:
     #print(f'[write_json] {path}')
-    directory = Path(path).parent
     try:
 		# check if directory exists, if not, create it
+        directory = Path(path).parent
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
             directory.chmod(0o777)
@@ -44,21 +48,15 @@ def read_json(path: str) -> object:
 
     return res
 
-# parse jsonlines
-def parse_jsonlines(lines: list[str]) -> list[dict]:
-    # how many records
-    #total_lines = len(lines)
-    #print(f"[parse_jsonlines] lines = {total_lines}")
-
-    # return parsed lines
-    return [json.loads(line) for line in lines]
-
+################################################################################
+# jsonl
+################################################################################
 # write jsonl
-def write_jsonl_0(list_dict:list[object], path: str) -> None:
+def write_jsonl(list_dict:list[object], path: str) -> None:
     #print(f'[write_jsonl] {path}')
-    directory = Path(path).parent
     try:
 		# check if directory exists, if not, create it
+        directory = Path(path).parent
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
             directory.chmod(0o777)
@@ -75,7 +73,7 @@ def write_jsonl_0(list_dict:list[object], path: str) -> None:
 	    print(f'[write_jsonl] exception {e}')
 
 # read jsonl
-def read_jsonl_0(path: str) -> list[dict]:
+def read_jsonl(path: str) -> list[dict]:
     #print(f'[read_jsonl] {path}')
     lines: list[dict] = []
     try:
@@ -84,103 +82,106 @@ def read_jsonl_0(path: str) -> list[dict]:
                 lines = f.readlines()
     except Exception as e:
         print(f'[read_jsonl] exception {e}')
-    return parse_jsonlines(lines)
+    return [json.loads(line) for line in lines]
 
-def write_jsonl(list_dict: list[dict], base_path: str, max_json_lines: int = 100000) -> None:
+################################################################################
+# jsonl cache (rolling files, combo of jsonl and parquets)
+################################################################################
+def write_to_jsonl_cache(list_dict: list[dict], base_path: str, max_json_lines: int = 100000) -> None:
     """
     Write a list of dictionaries to a JSONL file, and when the file size exceeds the specified maximum number of lines,
     write the data to a Parquet file and clear the JSONL file.
     """
-    directory = Path(base_path).parent
-    parquet_file_index = 0
-
-    # Check for existing Parquet files and update the parquet_file_index
-    existing_parquet_files = sorted(glob.glob(os.path.join(directory, f"{Path(base_path).stem}_*.parquet")))
-    if existing_parquet_files:
-        parquet_file_index = max([int(Path(f).stem.split("_")[1]) for f in existing_parquet_files]) + 1
-
-    # Check for existing JSONL file and update the current_file_size and current_line_count
-    current_file_size = 0
-    current_line_count = 0
-    if os.path.exists(base_path):
-        current_file_size = os.path.getsize(base_path)
-        with open(base_path, 'r', encoding='utf-8') as f:
-            current_line_count = sum(1 for _ in f)
-
     try:
         # Check if directory exists, if not, create it
+        directory = Path(base_path).parent
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
             directory.chmod(0o777)
 
         with lock:
+            # count lines
+            current_line_count = 0
+            with open(base_path, 'r', encoding='utf-8') as f:
+                current_line_count = sum(1 for _ in f)
+
+            # write
             with open(base_path, 'a', encoding='utf-8') as f:
                 for d in list_dict:
                     line = json.dumps(d, ensure_ascii=False).encode('utf-8').decode('utf-8')
                     f.write(line + '\n')
-                    current_file_size += len(line) + 1  # Account for newline character
                     current_line_count += 1
 
-            # If the JSONL file line count exceeds the maximum, write the data to a Parquet file and clear the JSONL file
+            # if JSONL line count exceeds the maximum, write the data to a Parquet file and clear the JSONL file
             if current_line_count >= max_json_lines:
+                # figure out correct suffix parquet_file_index
+                parquet_file_index = 0
+                existing_parquet_files = sorted(glob.glob(os.path.join(directory, f"{Path(base_path).stem}_*.parquet")))
+                if existing_parquet_files:
+                    parquet_file_index = max([int(Path(f).stem.split("_")[1]) for f in existing_parquet_files]) + 1
+
+                # write compressed parquet
                 parquet_file_path = directory / f"{Path(base_path).stem}_{parquet_file_index}.parquet"
-                with open(base_path, 'r', encoding='utf-8') as jsonl_file:
-                    table = pa.Table.from_pandas(pd.read_json(jsonl_file, lines=True))
-                pq.write_table(table, parquet_file_path, compression='snappy')
+                df = pd_read_jsonl(base_path)
+                pd_save_parquet(df,parquet_file_path)
                 os.chmod(parquet_file_path, 0o777)
-                parquet_file_index += 1
-                with open(base_path, 'w', encoding='utf-8') as jsonl_file:
+
+                # truncate
+                with open(base_path, 'w', encoding='utf-8') as jsonl_file: 
                     jsonl_file.truncate(0)
-                current_file_size = 0
-                current_line_count = 0
 
         os.chmod(base_path, 0o777)
 
     except Exception as e:
-        print(f'[write_jsonl] exception {e}')
+        print(f'[write_to_jsonl_cache] exception {e}')
 
-def read_jsonl(base_path: str, column_name: str = None) -> list[dict]:
+def read_from_jsonl_cache(base_path: str, column_name: str = None) -> list[dict]:
     """
     Read data from JSONL and Parquet files in the specified base path.
     If column_name is provided, only that column will be read from the Parquet files.
     """
-    directory = Path(base_path).parent
     result = []
+    try:
+        directory = Path(base_path).parent
 
-    # Read data from JSONL file
-    start_time = time.time()
-    if os.path.exists(base_path):
-        with open(base_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                row = json.loads(line.strip())
-                if column_name:
-                    result.append(row[column_name])
-                else:
-                    result.append(row)
-    jsonl_read_time = time.time() - start_time
-    print(f"JSONL file read time: {jsonl_read_time:.2f} seconds")
+        # Read data from JSONL file
+        if os.path.exists(base_path):
+            start_time = time.time()
+            df = pd_read_jsonl(base_path)
+            if column_name:
+                result.extend([x[column_name] for x in df.to_dict(orient='records')])
+            else:
+                result.extend(df.to_dict(orient='records'))
+            jsonl_read_time = time.time() - start_time
+            print(f"[read jsonl] {base_path} {jsonl_read_time:.2f}, records = {len(df)}")
 
-    # Read data from Parquet files
-    existing_parquet_files = sorted(glob.glob(os.path.join(directory, f"{Path(base_path).stem}_*.parquet")))
-    for parquet_file in existing_parquet_files:
-        start_time = time.time()
-        if column_name:
-            table = pq.read_table(parquet_file, columns=[column_name])
-            result.extend([row[column_name] for row in table.to_pandas().to_dict(orient='records')])
-        else:
-            table = pq.read_table(parquet_file)
-            result.extend(table.to_pandas().to_dict(orient='records'))
-        parquet_read_time = time.time() - start_time
-        print(f"Parquet file read time: {parquet_read_time:.2f} seconds")
+        # Read data from Parquet files
+        existing_parquet_files = sorted(glob.glob(os.path.join(directory, f"{Path(base_path).stem}_*.parquet")))
 
+        for parquet_file in existing_parquet_files:
+            start_time = time.time()
+            if column_name:
+                df = pd_read_parquet(parquet_file,[column_name])
+                result.extend([x[column_name] for x in df.to_dict(orient='records')])
+            else:
+                df = pd_read_parquet(parquet_file)
+                result.extend(df.to_dict(orient='records'))
+            parquet_read_time = time.time() - start_time
+            print(f"[read parquet] {parquet_file} {parquet_read_time:.2f} seconds, records = {len(df)}")
+    except Exception as e:
+        print(f'[read_from_jsonl_cache] exception {e}')
+    
     return result
 
-# write object to file
+################################################################################
+# file
+################################################################################
+# write file
 def write_file(obj:object, path: str) -> None:
     #print(f'[write_file] {path}')
-    directory = Path(path).parent
     try:
 		# check if directory exists, if not, create it
+        directory = Path(path).parent
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
             directory.chmod(0o777)
@@ -209,12 +210,15 @@ def read_file(path: str) -> list[str]:
 
     return lines
     
+################################################################################
+# gzip
+################################################################################
 # write gzip
 def write_gzip(content:object, path: str) -> None:
     #print(f'[write_gzip] {path}')
-    directory = Path(path).parent
     try:
 		# check if directory exists, if not, create it
+        directory = Path(path).parent
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
             directory.chmod(0o777)
@@ -260,3 +264,62 @@ def read_gzip(path: str) -> str:
         print(f'[read_gzip] exception {e}')
 
     return raw_content
+'''
+path = '/home/alfred/nfs/cc_zho/records/2024-33/com,maishirts,uninked/TU5MWJMVY22O6T2CYADNFUFQCRZ6WLU2.gz'
+read_gzip(path)
+'''
+#%%
+################################################################################
+# pandas
+################################################################################
+# read jsonl
+def pd_read_jsonl(filepath: str) -> pd.DataFrame:
+    return pd.read_json(filepath, lines=True)
+'''
+pd.read_json('~/nfs/cc_zho/extracts/2023-40/abc.jsonl', lines=True)
+'''
+
+# save parquet
+def pd_save_parquet(df: pd.DataFrame, filepath: str) -> None:
+    #df.to_parquet(filepath, compression='snappy') # snappy
+    #df.to_parquet(filepath, compression='gzip')  # gzip
+    #df.to_parquet(filepath, compression='lz4')   # lz4
+    #df.to_parquet(filepath, compression='zstd')  # zstd
+    df.to_parquet(filepath, compression='brotli') # brotli
+'''
+df.to_parquet('~/nfs/cc_zho/extracts/2023-40/abc_snappy.parquet', compression='snappy') # snappy
+df.to_parquet('~/nfs/cc_zho/extracts/2023-40/abc_gzip.parquet', compression='gzip')  # gzip
+df.to_parquet('~/nfs/cc_zho/extracts/2023-40/abc_lz4.parquet', compression='lz4')   # lz4
+df.to_parquet('~/nfs/cc_zho/extracts/2023-40/abc_zstd.parquet', compression='zstd')  # zstd
+df.to_parquet('~/nfs/cc_zho/extracts/2023-40/abc_brotli.parquet', compression='brotli') # brotli
+'''
+
+# read parquet
+def pd_read_parquet(file_path: str, columns: list = None) -> pd.DataFrame:
+    try:
+        df = pd.read_parquet(file_path, columns=columns)
+        return df
+    except Exception as e:
+        print(f"Error reading the Parquet file: {e}")
+        return None
+#%%
+'''
+pd_read_parquet('~/nfs/cc_zho/extracts/2023-40/2023-40_0.parquet')
+
+#%%
+%%time
+print(len(pd_read_parquet('~/nfs/cc_zho/extracts/2023-40/abc_snappy.parquet',['filepath'])))
+
+pd_read_parquet('~/nfs/cc_zho/extracts/2023-40/abc_snappy.parquet',['filepath']).to_dict(orient='records')
+df.to_dict(orient='records')
+
+#%%
+%%time
+print(len(pd_read_parquet('~/nfs/cc_zho/extracts/2023-40/abc_snappy.parquet')))
+#%%
+# print(len(pd_read_parquet('~/nfs/cc_zho/extracts/2023-40/abc_gzip.parquet')))
+print(len(pd_read_parquet('~/nfs/cc_zho/extracts/2023-40/abc_lz4.parquet')))
+print(len(pd_read_parquet('~/nfs/cc_zho/extracts/2023-40/abc_zstd.parquet')))
+print(len(pd_read_parquet('~/nfs/cc_zho/extracts/2023-40/abc_brotli.parquet')))
+#%%
+'''

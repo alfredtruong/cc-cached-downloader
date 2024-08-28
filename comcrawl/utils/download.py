@@ -4,15 +4,15 @@ This module contains helper functions for downloading records from Common Crawl 
 
 """
 
-import io
-import gzip
+#import io
+#import gzip
 from pathlib import Path
 import requests
 from requests.exceptions import ReadTimeout,RequestException
 from trafilatura import extract # strip content from html files
 from urllib.parse import urlparse
 from .types import Index,ResultList,Result
-from .cache import write_file,read_gzip,write_gzip,write_jsonl
+from .cache import write_file,read_gzip,write_gzip,write_to_jsonl_cache
 from .multithreading import make_multithreaded
 
 from fastlangid.langid import LID
@@ -40,6 +40,7 @@ ua = UserAgent()
 
 TIMEOUT_DURATION = 60
 URL_TEMPLATE = "https://data.commoncrawl.org/{filename}"
+MAX_JSONL_LINES = 100_000
 
 '''
 {
@@ -207,7 +208,7 @@ def save_single_extract(result: Result, path: str) -> str:
     if s is None: s = ''
     filepath = extract_cache_path(result, path) # id for record
     if False: write_file(s, filepath) # write content extract into separate file
-    if True: write_jsonl([{'filepath':str(filepath),'content':s}],jsonl_cache_path(index_from_result(result),path)) # write content extract to jsonl
+    if True: write_to_jsonl_cache([{'filepath':str(filepath),'content':s}],jsonl_cache_path(index_from_result(result),path),MAX_JSONL_LINES) # write content extract to jsonl
 
     # return
     return s
