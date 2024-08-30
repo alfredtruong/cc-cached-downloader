@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Truong"
+  given-names: "Alfred Kar Yin"
+  orcid: "https://orcid.org/0009-0002-1723-9854"
+title: "cc_cached_downloader"
+date-released: 2024-08-28
+url: "https://github.com/alfredtruong/cc-cached-downloader"

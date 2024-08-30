@@ -94,12 +94,17 @@ def write_to_jsonl_cache(list_dict: list[dict], base_path: str, max_json_lines: 
     """
     try:
         # Check if directory exists, if not, create it
-        directory = Path(base_path).parent
+        base_path = Path(base_path)
+        directory = base_path.parent
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
             directory.chmod(0o777)
 
         with lock:
+            if not base_path.exists():
+                base_path.touch()
+                os.chmod(base_path, 0o777)
+                
             # count lines
             current_line_count = 0
             with open(base_path, 'r', encoding='utf-8') as f:
@@ -116,7 +121,7 @@ def write_to_jsonl_cache(list_dict: list[dict], base_path: str, max_json_lines: 
             if current_line_count >= max_json_lines:
                 # figure out correct suffix parquet_file_index
                 parquet_file_index = 0
-                existing_parquet_files = sorted(glob.glob(os.path.join(directory, f"{Path(base_path).stem}_*.parquet")))
+                existing_parquet_files = sorted(glob.glob(os.path.join(directory, f"{base_path.stem}_*.parquet")))
                 if existing_parquet_files:
                     parquet_file_index = max([int(Path(f).stem.split("_")[1]) for f in existing_parquet_files]) + 1
 
@@ -129,8 +134,6 @@ def write_to_jsonl_cache(list_dict: list[dict], base_path: str, max_json_lines: 
                 # truncate
                 with open(base_path, 'w', encoding='utf-8') as jsonl_file: 
                     jsonl_file.truncate(0)
-
-        os.chmod(base_path, 0o777)
 
     except Exception as e:
         print(f'[write_to_jsonl_cache] exception {e}')
