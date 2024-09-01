@@ -1,0 +1,340 @@
+############################################################
+# build environment
+############################################################
+pip freeze > requirements.txt
+python -m venv nlp
+source env/bin/activate
+pip install -r requirements.txt
+
+
+############################################################
+# install miniconda
+############################################################
+mkdir -p ~/miniconda3
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+rm -rf ~/miniconda3/miniconda.sh
+
+
+############################################################
+# activate
+############################################################
+cd /home/alfred/nfs/code/cc-cached-downloader # repo
+source ~/nfs/code/nlp/bin/activate # environment must be on shared nfs otherwise not shareable
+
+
+rm -rf /home/alfred/nfs/cc_zho_hk/extracts/*
+
+
+ll /home/alfred/nfs/cc_zho_hk/records/
+ll /home/alfred/nfs/cc_zho_hk/extracts/
+ll /home/alfred/nfs/cc_zho_hk/output/
+watch 'ps aux | grep /home/alfred/nfs/code/cc-cached-downloader/run.py' # watch running jobs
+ps aux | grep 'python /home/alfred/nfs/code/cc-cached-downloader/run.py' | awk '{print $2}' | xargs kill -9 # kill running jobs
+ls -1 ~/nfs/cc_zho/extracts/*/*.jsonl | xargs wc -l # count of jsonl rows
+
+
+############################################################
+# extract dirs with 0 files
+############################################################
+for dir in */; do
+    count=$(find "$dir" -type f | wc -l)
+    if [ "$count" -eq 0 ]; then
+        echo "$dir: $count"
+    fi
+done
+
+
+############################################################
+chmod -R 777 /home/alfred/nfs/cc_zho/ # all subdirs and files
+chmod -R 777 /home/alfred/nfs/cc_zho/output/* # output file rights
+chmod -R 777 /home/alfred/nfs/cc_zho/records/* # output file rights
+chmod -R 777 /home/alfred/nfs/cc_zho/extracts/* # output file rights
+
+cd /nfs/alfred/cc_zho/extracts
+watch ls -l */*.jsonl
+
+
+############################################################
+# bash
+############################################################
+g12	
+g13	v v slow
+g14	fast
+g15	fast
+g16	fast
+g17	fast
+
+
+############################################################
+# no HK filter
+############################################################
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2024-33 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2024-33.txt 2>&1 & # g12 done done 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2024-30 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2024-30.txt 2>&1 & # g12 done done 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2024-26 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2024-26.txt 2>&1 & # g12 done done 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2024-22 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2024-22.txt 2>&1 & # g12 done done 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2024-18 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2024-18.txt 2>&1 & # g13 done done
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2024-10 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2024-10.txt 2>&1 & # g13 done done
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2023-50 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2023-50.txt 2>&1 & # g13 done done
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2023-40 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2023-40.txt 2>&1 & # g13 done done
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2023-23 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2023-23.txt 2>&1 & # g14 2742960
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2023-14 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2023-14.txt 2>&1 & # g14 2742961
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2023-06 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2023-06.txt 2>&1 & # g14 2742962
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2022-49 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2022-49.txt 2>&1 & # g14 2742963
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2022-40 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2022-40.txt 2>&1 & # g15 g12 2442665
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2022-33 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2022-33.txt 2>&1 & # g15 g12 2442666
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2022-27 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2022-27.txt 2>&1 & # g15 g13 3594492 x
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2022-21 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2022-21.txt 2>&1 & # g15 g13 3594493 x
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2022-05 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2022-05.txt 2>&1 & # g16 2654702
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2021-49 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2021-49.txt 2>&1 & # g16 2654703
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2021-43 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2021-43.txt 2>&1 & # g16 2654704
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2021-39 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2021-39.txt 2>&1 & # g16 2654705
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2021-31 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2021-31.txt 2>&1 & # g17 3437767
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2021-25 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2021-25.txt 2>&1 & # g17 3437768
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2021-21 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2021-21.txt 2>&1 & # g17
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2021-17 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2021-17.txt 2>&1 & # g17
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2021-10 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2021-10.txt 2>&1 & # g12 2422391
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2021-04 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2021-04.txt 2>&1 & # g12 2422392
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2020-50 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2020-50.txt 2>&1 & # g12 2422393 x
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2020-45 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2020-45.txt 2>&1 & # g12 2422394 x
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2020-40 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2020-40.txt 2>&1 & # g13 3588452
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2020-34 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2020-34.txt 2>&1 & # g13 3588453
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2020-29 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2020-29.txt 2>&1 & # g13 3588454
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2020-24 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2020-24.txt 2>&1 & # g13 3588455
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2020-16 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2020-16.txt 2>&1 & # g14 3268429
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2020-10 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2020-10.txt 2>&1 & # g14 3268430
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2020-05 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2020-05.txt 2>&1 & # g14 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2019-51 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2019-51.txt 2>&1 & # g14 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2019-47 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2019-47.txt 2>&1 & # g15 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2019-43 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2019-43.txt 2>&1 & # g15 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2019-39 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2019-39.txt 2>&1 & # g15 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2019-35 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2019-35.txt 2>&1 & # g15 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2019-30 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2019-30.txt 2>&1 & # g16 1224936
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2019-26 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2019-26.txt 2>&1 & # g16 1224937
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2019-22 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2019-22.txt 2>&1 & # g16 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2019-18 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2019-18.txt 2>&1 & # g16 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2019-13 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2019-13.txt 2>&1 & # g17
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2019-09 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2019-09.txt 2>&1 & # g17
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2019-04 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2019-04.txt 2>&1 & # g17 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2018-51 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2018-51.txt 2>&1 & # g17 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2018-47 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2018-47.txt 2>&1 & # g12
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2018-43 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2018-43.txt 2>&1 & # g12
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2018-39 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2018-39.txt 2>&1 & # g13
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho --index 2018-34 --threads 50 > /home/alfred/nfs/cc_zho/output/output_2018-34.txt 2>&1 & # g13
+
+
+############################################################
+# with HK filter
+############################################################
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2024-30 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2024-30.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2024-26 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2024-26.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2024-22 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2024-22.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2024-18 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2024-18.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2024-10 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2024-10.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2023-50 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2023-50.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2023-40 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2023-40.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2023-23 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2023-23.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2023-14 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2023-14.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2023-06 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2023-06.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2022-49 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2022-49.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2022-40 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2022-40.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2022-33 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2022-33.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2022-27 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2022-27.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2022-21 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2022-21.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2022-05 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2022-05.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2021-49 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2021-49.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2021-43 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2021-43.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2021-39 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2021-39.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2021-31 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2021-31.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2021-25 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2021-25.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2021-21 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2021-21.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2021-17 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2021-17.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2021-10 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2021-10.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2021-04 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2021-04.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2020-50 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2020-50.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2020-45 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2020-45.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2020-40 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2020-40.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2020-34 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2020-34.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2020-29 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2020-29.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2020-24 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2020-24.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2020-16 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2020-16.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2020-10 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2020-10.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2020-05 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2020-05.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2019-51 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2019-51.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2019-47 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2019-47.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2019-43 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2019-43.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2019-39 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2019-39.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2019-35 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2019-35.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2019-30 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2019-30.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2019-26 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2019-26.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2019-22 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2019-22.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2019-18 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2019-18.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2019-13 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2019-13.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2019-09 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2019-09.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2019-04 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2019-04.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2018-51 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2018-51.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2018-47 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2018-47.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2018-43 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2018-43.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2018-39 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2018-39.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2018-34 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2018-34.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2018-30 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2018-30.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2018-26 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2018-26.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2018-22 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2018-22.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2018-17 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2018-17.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2018-13 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2018-13.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2018-09 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2018-09.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2018-05 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2018-05.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2017-51 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2017-51.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2017-47 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2017-47.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2017-43 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2017-43.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2017-39 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2017-39.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2017-34 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2017-34.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2017-30 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2017-30.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2017-26 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2017-26.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2017-22 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2017-22.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2017-17 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2017-17.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2017-13 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2017-13.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2017-09 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2017-09.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2017-04 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2017-04.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2016-50 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2016-50.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2016-44 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2016-44.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2016-40 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2016-40.txt 2>&1 & # finished 
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2016-36 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2016-36.txt 2>&1 & # finished  
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2016-30 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2016-30.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2016-26 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2016-26.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2016-22 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2016-22.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2016-18 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2016-18.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2016-07 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2016-07.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2015-48 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2015-48.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2015-40 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2015-40.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2015-35 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2015-35.txt 2>&1 & # finished
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2015-32 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2015-32.txt 2>&1 & # finished g12
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2015-27 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2015-27.txt 2>&1 & # finished g12
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2015-22 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2015-22.txt 2>&1 & # finished g12
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2015-18 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2015-18.txt 2>&1 & # finished g13
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2015-14 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2015-14.txt 2>&1 & # finished g13
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2015-11 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2015-11.txt 2>&1 & # finished g13
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2015-06 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2015-06.txt 2>&1 & # finished g13
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2014-52 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2014-52.txt 2>&1 & # finished g13
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2014-49 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2014-49.txt 2>&1 & # finished g13
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2014-42 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2014-42.txt 2>&1 & # finished g14
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2014-41 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2014-41.txt 2>&1 & # finished g14
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2014-35 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2014-35.txt 2>&1 & # finished g14
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2014-23 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2014-23.txt 2>&1 & # finished g15
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2014-15 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2014-15.txt 2>&1 & # finished g15
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2014-10 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2014-10.txt 2>&1 & # finished g16
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2013-48 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2013-48.txt 2>&1 & # finished g16
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2013-20 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2013-20.txt 2>&1 & # finished g17
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2012 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2012.txt 2>&1 & # g17
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2009-2010 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2009-2010.txt 2>&1 & # g17
+nohup python /home/alfred/nfs/code/cc-cached-downloader/run.py --outdir /home/alfred/nfs/cc_zho_hk --index 2008-2009 --threads 100 > /home/alfred/nfs/cc_zho_hk/output/output_2008-2009.txt 2>&1 & # g17
+
+
+############################################################
+# where is the data
+############################################################
+cd ~/nfs/cc_zho_hk/
+(base) alfred@net-g14:~/nfs/cc_zho_hk$ du -h -d 1 extracts
+(base) alfred@net-g16:~/nfs/cc_zho_hk$ du -h -d 1 records/
+
+(base) alfred@net-g14:~/nfs/cc_zho_hk/extracts$ ls -1r | xargs du -h -d 0
+1.5G    ./2024-30
+2.6G    ./2024-26
+1.3G    ./2024-22
+849M    ./2024-18
+842M    ./2024-10
+872M    ./2023-50
+1.3G    ./2023-40
+749M    ./2023-23
+1.4G    ./2023-14
+841M    ./2023-06
+873M    ./2022-49
+844M    ./2022-40
+1.6G    ./2022-33
+759M    ./2022-27
+831M    ./2022-21
+741M    ./2022-05
+689M    ./2021-49
+783M    ./2021-43
+668M    ./2021-39
+635M    ./2021-31
+594M    ./2021-25
+650M    ./2021-21
+737M    ./2021-17
+713M    ./2021-10
+849M    ./2021-04
+688M    ./2020-50
+689M    ./2020-45
+749M    ./2020-40
+624M    ./2020-34
+716M    ./2020-29
+728M    ./2020-24
+782M    ./2020-16
+787M    ./2020-10
+880M    ./2020-05
+809M    ./2019-51
+829M    ./2019-47
+965M    ./2019-43
+607M    ./2019-39
+665M    ./2019-35
+615M    ./2019-30
+547M    ./2019-26
+547M    ./2019-22
+496M    ./2019-18
+482M    ./2019-13
+552M    ./2019-09
+499M    ./2019-04
+543M    ./2018-51
+414M    ./2018-47
+546M    ./2018-43
+488M    ./2018-39
+1.5G    ./2018-34
+2.0G    ./2018-30
+1.7G    ./2018-26
+1.6G    ./2018-22
+1.7G    ./2018-17
+1.7G    ./2018-13
+1.9G    ./2018-09
+1.7G    ./2018-05
+1.5G    ./2017-51
+1.5G    ./2017-47
+2.0G    ./2017-43
+1.6G    ./2017-39
+1.8G    ./2017-34
+1.4G    ./2017-30
+1.5G    ./2017-26
+1.4G    ./2017-22
+1.3G    ./2017-17
+1.3G    ./2017-13
+1.2G    ./2017-09
+1.3G    ./2017-04
+1.1G    ./2016-50
+1.3G    ./2016-44
+516M    ./2016-40
+509M    ./2016-36
+491M    ./2016-30
+430M    ./2016-26
+526M    ./2016-22
+453M    ./2016-18
+479M    ./2016-07
+532M    ./2015-48
+375M    ./2015-40
+518M    ./2015-35
+590M    ./2015-32
+552M    ./2015-27
+648M    ./2015-22
+665M    ./2015-18
+538M    ./2015-14
+637M    ./2014-52
+635M    ./2014-49
+1.2G    ./2014-42
+913M    ./2014-41
+783M    ./2014-35
+837M    ./2014-23
+594M    ./2014-15
+528M    ./2014-10
+598M    ./2013-48
+410M    ./2013-20
+
+
+du -h -d 1 ~/nfs/cc_zho_hk/extracts

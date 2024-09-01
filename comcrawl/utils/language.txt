@@ -1,0 +1,64 @@
+"""Language Helpers.
+
+This module contains helper functions for detecting languages used.
+
+"""
+
+from .types import ResultList,Result
+from .multithreading import make_multithreaded
+from .download import get_single_extract
+from fastlangid.langid import LID
+langid = LID()
+'''
+result = langid.predict('This is a test')
+print(result)
+'''
+
+# https://www.alchemysoftware.com/livedocs/ezscript/Topics/Catalyst/Language.htm
+'''
+Chinese (Simplified)								zh
+Chinese (Simplified) (zh-Hans)						zh-Hans
+Chinese (Simplified, People's Republic of China)	zh-CN
+Chinese (Simplified, Singapore)						zh-SG
+Chinese (Traditional) (zh-Hant)						zh-Hant
+Chinese (Traditional, Hong Kong S.A.R.)				zh-HK
+Chinese (Traditional, Macao S.A.R.)					zh-MO
+Chinese (Traditional, Taiwan)						zh-TW
+'''
+
+# read local if it exists
+def detect_single_extract(result: Result, path: str = None, force_update: bool = False, append_extract: bool = False) -> Result:
+	# populate res
+	result = get_single_extract(result, path, force_update, True)
+	result['languages'] = set(langid.predict(result['content']))
+	# return
+	return result
+
+def detect_multiple_extracts(results: ResultList, threads: int = None, path: str = None, force_update: bool = False, append_extract: bool = False) -> ResultList:
+    """Detecteds language used in multiple extracts.
+
+    Args:
+        url: URL pattern to search for
+        indexes: list of Common Crawl indexes to search
+        threads: number of threads to use
+        path: where to cache results
+        force_update: if cache should be ignored / repopulated
+
+    Returns:
+        The provided list of results with corresponding detected languages in 'languages' key.
+
+    """
+    # populate results
+    out: ResultList = [] # default, i.e. no results
+    if threads:
+        # multi-thread
+        multithreaded_detect = make_multithreaded(detect_single_extract, threads)
+        out = multithreaded_detect(results, path, force_update, append_extract)
+    else:
+        # single-thread
+        for result in results:
+            res:Result = detect_single_extract(result, path, force_update, append_extract)
+            out.append(res) # append
+
+    # return
+    return out
