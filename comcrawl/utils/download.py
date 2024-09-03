@@ -142,7 +142,7 @@ def save_single_record(result: Result, path: str) -> None:
     # do request
     try:
         # request
-        print(f'[save_single_record] request_url = {request_url}')
+        #print(f'[save_single_record] request_url = {request_url}')
         response = requests.get(
             request_url,
             timeout=TIMEOUT_DURATION,

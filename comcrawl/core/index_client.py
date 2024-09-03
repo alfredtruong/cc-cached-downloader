@@ -254,6 +254,7 @@ class IndexClient:
         '''
 
         # read athena csvs
+        print('[init_results_with_athena_query_csvs] read_csv')
         df = pd.read_csv(self.outdir / f'athena/{EXECUTION_IDS[index]}.csv')
         df = df.drop_duplicates('content_digest') # only unique digests
         df = df.sort_values('warc_record_length',ascending=False) # large records first
@@ -276,10 +277,12 @@ class IndexClient:
         results = list(df.T.to_dict().values())
 
         # get cached results
+        print('[init_results_with_athena_query_csvs] read_from_jsonl_cache')
         cached_filepaths = read_from_jsonl_cache(jsonl_cache_path(index,self.outdir),'filepath') # read info from all cached jsonls
         cached_filepaths = set(cached_filepaths) # extract filepath identifiers
 
         # add cache status to results
+        print('[init_results_with_athena_query_csvs] mark cached')
         cache_counter = 0
         for result in results:
             cache_path = extract_cache_path(result,self.outdir)
@@ -293,6 +296,7 @@ class IndexClient:
         ########################################
         # save
         ########################################
+        print('[init_results_with_athena_query_csvs] done')
         self.results = results
     
     def init_results_with_url_filter(self, url: str, threads: int = None) -> None:
