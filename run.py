@@ -30,9 +30,9 @@ if not is_jupyter:
 	MAX_LENGTH = args.max_length
 else:
 	#print('there')
-	OUTPUT_DIR = '/home/alfred/nfs/cc_zho' #OUTPUT_DIR = '/home/alfred/nfs/cc_zho_hk'
-	INDEX = '2018-43' #INDEX = '2018-43'
-	THREADS = 50
+	OUTPUT_DIR = '/home/alfred/nfs/cc_zho_2' #OUTPUT_DIR = '/home/alfred/nfs/cc_zho_hk'
+	INDEX = '2024-10' #INDEX = '2018-43'
+	THREADS = None
 	MIN_LENGTH = None
 	MAX_LENGTH = None
 
@@ -64,6 +64,18 @@ ic.results # for testing
 ic.results[0]
 '''
 
+'''
+# find index of record with url == 'find_url'
+find_url = 'https://www.naturallyhealthierways.com/uf20200409/20200409111419221922.html'
+for i,x in enumerate(ic.results):
+	if x['url'] == find_url:
+		print(i)
+
+ic._save_single_record(ic.results[101])
+
+(base) alfred@net-g14:/nfs/alfred/cc_zho_2$ ll /nfs/alfred/cc_zho_2/records/2024-10/*/*.gz # raw record
+(base) alfred@net-g14:/nfs/alfred/cc_zho_2$ less /nfs/alfred/cc_zho_2/extracts/2024-10/2024-10.jsonl # extract
+'''
 #%%
 ################# DOWNLOAD
 print('[run] populate results')
