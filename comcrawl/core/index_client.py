@@ -7,7 +7,15 @@ This module contains the core object of the package.
 import logging
 from pathlib import Path
 from ..utils.types import Index, IndexList, ResultList
-from ..utils import download_available_indexes,get_multiple_indexes,get_multiple_extracts,read_json,write_json,read_from_jsonl_cache,extract_cache_path,jsonl_cache_path
+from ..utils import (
+    download_available_indexes,
+    save_single_record,save_single_extract,
+    get_single_index,get_multiple_indexes,
+    get_single_extract,get_multiple_extracts,
+    read_json,write_json,
+    read_cache,extract_cache_path,index_cache_path,
+    strip_cache,redump_cache,
+)
 import pandas as pd
 
 # with HK in domain filter
@@ -207,6 +215,19 @@ class IndexClient:
         self.outdir = Path(outdir)
         self.results: ResultList = []
 
+        #self._get_single_record = lambda : get_single_record
+        self._save_single_record = lambda result: save_single_record(result, self.outdir)
+        self._get_single_extract = lambda result: get_single_extract(result, self.outdir)
+        self._save_single_extract = lambda result: save_single_extract(result, self.outdir)
+
+        self._get_single_index = lambda url, index: get_single_index(url, index, self.outdir)
+        self._get_multiple_indexes = lambda url, indexes, threads: get_multiple_indexes(url, indexes, self.outdir, threads)
+        self._get_single_extract = lambda result: get_single_extract(result, self.outdir)
+        self._get_multiple_extracts = lambda results, threads: get_multiple_extracts(results, self.outdir, threads)
+
+    def strip_cache(self, indexdir: str) -> None: strip_cache(indexdir)
+    def redump_cache(self, indexdir: str) -> None: redump_cache(indexdir)
+
     def get_available_indexes(self) -> IndexList:
         """Show all available indexes
 
@@ -254,13 +275,13 @@ class IndexClient:
         '''
 
         # read athena csvs
-        print('[init_results_with_athena_query_csvs] read_csv')
-        df = pd.read_csv(self.outdir / f'athena/{EXECUTION_IDS[index]}.csv')
-        df = df.drop_duplicates('content_digest') # only unique digests
+        raw_df = pd.read_csv(self.outdir / f'athena/{EXECUTION_IDS[index]}.csv')
+        df = raw_df.drop_duplicates('content_digest') # only unique digests
         df = df.sort_values('warc_record_length',ascending=False) # large records first
         if do_plot: pd.Series(df['warc_record_length'].values).plot()
         if min_length: df = df[df['warc_record_length']>=min_length]
         if max_length: df = df[df['warc_record_length']<=max_length]
+        print(f'[init_results_with_athena_query_csvs] read_csv: raw_len = {len(raw_df)}, final_len = {len(df)}')
 
         # rename for downloader
         df = df.rename(
@@ -277,12 +298,11 @@ class IndexClient:
         results = list(df.T.to_dict().values())
 
         # get cached results
-        print('[init_results_with_athena_query_csvs] read_from_jsonl_cache')
-        cached_filepaths = read_from_jsonl_cache(jsonl_cache_path(index,self.outdir),'filepath') # read info from all cached jsonls
-        cached_filepaths = set(cached_filepaths) # extract filepath identifiers
+        raw_cached_filepaths = read_cache(index_cache_path(index,self.outdir),'filepath') # read info from all cached jsonls
+        cached_filepaths = set(raw_cached_filepaths) # extract filepath identifiers
+        print(f'[init_results_with_athena_query_csvs] read_cache: total = {len(raw_cached_filepaths)}, unique = {len(cached_filepaths)}')
 
         # add cache status to results
-        print('[init_results_with_athena_query_csvs] mark cached')
         cache_counter = 0
         for result in results:
             cache_path = extract_cache_path(result,self.outdir)
@@ -291,12 +311,11 @@ class IndexClient:
                 cache_counter += 1
             else:
                 result['cached'] = False
-        print(f'[init_results_with_athena_query_csvs] {cache_counter} / {len(cached_filepaths)}')
+        print(f'[init_results_with_athena_query_csvs] mark cached: {cache_counter} / {len(cached_filepaths)}')
 
         ########################################
         # save
         ########################################
-        print('[init_results_with_athena_query_csvs] done')
         self.results = results
     
     def init_results_with_url_filter(self, url: str, threads: int = None) -> None:
@@ -309,7 +328,7 @@ class IndexClient:
             threads: Number of threads to use. Enables multi-threading only if set.
 
         """
-        self.results = get_multiple_indexes(url, self.indexes, self.outdir, threads)
+        self.results = self._get_multiple_indexes(url, self.indexes, threads)
 
     def populate_results(self, threads: int = None) -> None:
         """Download.
@@ -320,4 +339,4 @@ class IndexClient:
             threads: Number of threads to use. Enables multi-threading only if set.
 
         """
-        self.results = get_multiple_extracts(self.results, self.outdir, threads)
+        self.results = self._get_multiple_extracts(self.results, threads)
