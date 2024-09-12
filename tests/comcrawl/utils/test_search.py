@@ -3,7 +3,7 @@ from comcrawl.utils.search import get_single_index,get_multiple_indexes
 
 
 def test_get_single_index(snapshot):
-    results = get_single_index("2019-51", "https://index.commoncrawl.org/*")
+    results = get_single_index("https://index.commoncrawl.org/*", "2019-51")
 
     snapshot.assert_match(results)
 

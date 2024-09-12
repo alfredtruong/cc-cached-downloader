@@ -27,21 +27,21 @@ Chinese (Traditional, Taiwan)						zh-TW
 '''
 
 # read local if it exists
-def detect_single_extract(result: Result, path: str = None, force_update: bool = False, append_extract: bool = False) -> Result:
+def detect_single_extract(result: Result, basepath: str = None, force_update: bool = False, append_extract: bool = False) -> Result:
 	# populate res
-	result = get_single_extract(result, path, force_update, True)
+	result = get_single_extract(result, basepath, force_update, True)
 	result['languages'] = set(langid.predict(result['content']))
 	# return
 	return result
 
-def detect_multiple_extracts(results: ResultList, threads: int = None, path: str = None, force_update: bool = False, append_extract: bool = False) -> ResultList:
+def detect_multiple_extracts(results: ResultList, threads: int = None, basepath: str = None, force_update: bool = False, append_extract: bool = False) -> ResultList:
     """Detecteds language used in multiple extracts.
 
     Args:
         url: URL pattern to search for
         indexes: list of Common Crawl indexes to search
         threads: number of threads to use
-        path: where to cache results
+        basepath: where to cache results
         force_update: if cache should be ignored / repopulated
 
     Returns:
@@ -53,11 +53,11 @@ def detect_multiple_extracts(results: ResultList, threads: int = None, path: str
     if threads:
         # multi-thread
         multithreaded_detect = make_multithreaded(detect_single_extract, threads)
-        out = multithreaded_detect(results, path, force_update, append_extract)
+        out = multithreaded_detect(results, basepath, force_update, append_extract)
     else:
         # single-thread
         for result in results:
-            res:Result = detect_single_extract(result, path, force_update, append_extract)
+            res:Result = detect_single_extract(result, basepath, force_update, append_extract)
             out.append(res) # append
 
     # return

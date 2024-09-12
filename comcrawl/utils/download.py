@@ -12,8 +12,9 @@ from requests.exceptions import ReadTimeout,RequestException
 from trafilatura import extract # strip content from html files
 from urllib.parse import urlparse
 from .types import Index,ResultList,Result
-from .cache import write_file,read_gzip,write_gzip,write_to_jsonl_cache
+from .cache import write_file,read_gzip,write_gzip,write_cache
 from .multithreading import make_multithreaded
+#from warcio.archiveiterator import ArchiveIterator
 
 from fastlangid.langid import LID
 langid = LID()
@@ -92,29 +93,33 @@ def domain_from_result(result: Result) -> Path:
     return domain
 
 # storage location for raw result
-def record_cache_path(result: Result, path: str) -> Path:
+def record_cache_path(result: Result, basepath: str) -> Path:
     index = index_from_result(result) # get index
     domain = domain_from_result(result) # get domain
-    return Path(path) / f"records/{index}/{domain}/{result['digest']}.txt" # e.g. path/2024-27/hk01/fashion_hk01_com/hash[suffix].txt
+    return Path(basepath) / f"records/{index}/{domain}/{result['digest']}.txt" # e.g. basepath/2024-27/hk01/fashion_hk01_com/hash[suffix].txt
 
 # storage location for gzip of raw result
-def gzip_cache_path(result: Result, path: str) -> Path:
+def gzip_cache_path(result: Result, basepath: str) -> Path:
     index = index_from_result(result) # get index
     domain = domain_from_result(result) # get domain
-    return Path(path) / f"records/{index}/{domain}/{result['digest']}.gz" # e.g. path/2024-27/hk01/fashion_hk01_com/hash[suffix].gz
+    return Path(basepath) / f"records/{index}/{domain}/{result['digest']}.gz" # e.g. basepath/2024-27/2024-27/hk01/fashion_hk01_com/hash[suffix].gz
 
 # storage location for extract of result
-def extract_cache_path(result: Result, path: str) -> Path:
+def extract_cache_path(result: Result, basepath: str) -> Path:
     index = index_from_result(result) # get index
     domain = domain_from_result(result) # get domain
-    return Path(path) / f"extracts/{index}/{domain}/{result['digest']}.txt" # e.g. path/2024-27/hk01/fashion_hk01_com/hash[suffix].txt
+    return Path(basepath) / f"extracts/{index}/{domain}/{result['digest']}.txt" # e.g. basepath/2024-27/2024-27/hk01/fashion_hk01_com/hash[suffix].txt
 
 # storage location for jsonl containing all results
-def jsonl_cache_path(index: Index, path: str) -> Path:
-    return Path(path) / f"extracts/{index}/{index}.jsonl" # e.g. path/2024-27.jsonl
+def jsonl_cache_path(index: Index, basepath: str) -> Path:
+    return Path(basepath) / f"extracts/{index}/{index}.jsonl" # e.g. basepath/2024-27/2024-27.jsonl
+
+# storage location for index
+def index_cache_path(index: Index, basepath: str) -> Path:
+    return Path(basepath) / f"extracts/{index}/" # e.g. basepath/2024-27/
 
 # given search result, request record
-def save_single_record(result: Result, path: str) -> None:
+def save_single_record(result: Result, basepath: str) -> None:
     """Downloads content for single search result.
 
     Args:
@@ -128,8 +133,12 @@ def save_single_record(result: Result, path: str) -> None:
     Returns:
         The provided result, extended by the corresponding record content string.
     """
+    '''
+    result = ic.results[101]
+    basepath = ic.outdir
+    '''
     # testing
-    #print(f'[save_single_record] path = {path}')
+    #print(f'[save_single_record] basepath = {basepath}')
 
     # default
     #raw_content: str = "" # no content
@@ -161,9 +170,17 @@ def save_single_record(result: Result, path: str) -> None:
         #unzipped_file = gzip.GzipFile(fileobj=zipped_file)
         #raw_data: bytes = unzipped_file.read()
         #raw_content: str = raw_data.decode("utf-8") # overwrite default with parsed result
+        '''
+        stream = ArchiveIterator(response.raw)
+        nothing = None
+        for warc_record in stream:
+            print(type(warc_record))
+            if warc_record.rec_type == 'response':
+                nothing = warc_record.content_stream().read()
+        '''
 
         # cache
-        write_gzip(response.content, gzip_cache_path(result, path))
+        write_gzip(response.content, gzip_cache_path(result, basepath))
 
     except ReadTimeout as e:
         print(f'[save_single_record] request timed out: {e}')
@@ -173,25 +190,25 @@ def save_single_record(result: Result, path: str) -> None:
     #    print(f"[save_single_record] could not extract data from {request_url}")
 
     # cache
-    #write_gzip(response.content, gzip_cache_path(result, path))
-    #write_file(raw_content, record_cache_path(result, path)) # contents of warc including header
+    #write_gzip(response.content, gzip_cache_path(result, basepath))
+    #write_file(raw_content, record_cache_path(result, basepath)) # contents of warc including header
 
     # return
     #return raw_content
 
 # given search result, request record
-def save_single_extract(result: Result, path: str) -> str:
+def save_single_extract(result: Result, basepath: str) -> str:
     # ensure we have warc gz
-    cache_path = gzip_cache_path(result, path)
+    cache_path = gzip_cache_path(result, basepath)
     if not cache_path.exists():
         #print(f'[save_single_extract][download] {cache_path}')
-        save_single_record(result, path)
+        save_single_record(result, basepath)
 
     # parse warc gz
     raw_content:str = read_gzip(cache_path)
 
     # extract contents
-    s: str = '' # default
+    extracted_content: str = '' # default
     if len(raw_content) == 0:
         print(f'[save_single_extract] no content')
         print(raw_content)
@@ -202,21 +219,21 @@ def save_single_extract(result: Result, path: str) -> str:
             print(len(stripped_content))
         else:
             stripped_content = stripped_content[2] # overwrite default with parsed result
-            s = extract(stripped_content) # overwrite default with parsed result
+            extracted_content = extract(stripped_content) # overwrite default with parsed result
 
     # cache
-    if s is None: s = ''
-    filepath = extract_cache_path(result, path) # id for record
-    if False: write_file(s, filepath) # write content extract into separate file
-    if True: write_to_jsonl_cache([{'filepath':str(filepath),'content':s}],jsonl_cache_path(index_from_result(result),path),MAX_JSONL_LINES) # write content extract to jsonl
+    if extracted_content is None: extracted_content = ''
+    filepath = extract_cache_path(result, basepath) # id for record
+    if False: write_file(extracted_content, filepath) # write content extract into separate file
+    if True: write_cache([{'filepath':str(filepath),'content':extracted_content}],index_cache_path(index_from_result(result),basepath),MAX_JSONL_LINES) # write content extract to jsonl
 
     # return
-    return s
+    return extracted_content
 
 # read local if it exists
-def get_single_extract(result: Result, path: str) -> Result:
+def get_single_extract(result: Result, basepath: str) -> Result:
     # bail if already cached, i.e. content already extracted
-    cache_path = extract_cache_path(result, path)
+    #cache_path = extract_cache_path(result, basepath)
     if result['cached']:
         #print(f'[get_single_extract][cache] {cache_path}')
         print('.')
@@ -226,7 +243,7 @@ def get_single_extract(result: Result, path: str) -> Result:
     # populate res
     #print(f'[get_single_extract][extract] {cache_path}')
     print('x')
-    save_single_extract(result, path)
+    save_single_extract(result, basepath)
 
     # indicate done
     result['cached'] = True
@@ -234,7 +251,7 @@ def get_single_extract(result: Result, path: str) -> Result:
     # return
     return result
 
-def get_multiple_extracts(results: ResultList, path: str, threads: int = None) -> ResultList:
+def get_multiple_extracts(results: ResultList, basepath: str, threads: int = None) -> ResultList:
     """Downloads search results.
 
     The corresponding record for each Common Crawl results list is downloaded.
@@ -242,7 +259,7 @@ def get_multiple_extracts(results: ResultList, path: str, threads: int = None) -
     Args:
         results: list of Common Crawl search results
         threads: number of threads to use
-        path: where to cache results
+        basepath: where to cache results
 
     Returns:
         List of all results with corresponding contents in 'contents' key and languages in 'languages' key if requested
@@ -253,11 +270,11 @@ def get_multiple_extracts(results: ResultList, path: str, threads: int = None) -
     if threads:
         # multi-thread
         multithreaded_download = make_multithreaded(get_single_extract, threads)
-        out = multithreaded_download(results, path)
+        out = multithreaded_download(results, basepath)
     else:
         # single-thread
         for result in results:
-            res:Result = get_single_extract(result, path)
+            res:Result = get_single_extract(result, basepath)
             out.append(res) # append
 
     # return
