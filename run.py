@@ -10,6 +10,7 @@ for arg in sys.argv:
 	if 'ipykernel_launcher' in arg:
 		is_jupyter = True
 print(f'[run] is_jupyter = {is_jupyter}')
+# is_jupyter = True
 
 # load settings
 if not is_jupyter:
@@ -32,11 +33,10 @@ else:
 	#print('there')
 	OUTPUT_DIR = '/home/alfred/nfs/cc_zho_2' #OUTPUT_DIR = '/home/alfred/nfs/cc_zho_hk'
 	INDEX = '2024-10' #INDEX = '2018-43'
-	THREADS = None
+	THREADS = 50
 	MIN_LENGTH = None
 	MAX_LENGTH = None
 
-#%%
 ################# POPULATE RESULTS WITH ATHENA CSVS
 print('[run] read athena csvs')
 ic = IndexClient(outdir = OUTPUT_DIR)
@@ -48,23 +48,15 @@ ic.init_results_with_athena_query_csvs(index=INDEX, min_length=MIN_LENGTH, max_l
 '''
 ic = IndexClient('2024-26',outdir = OUTPUT_DIR) # only consider single crawl
 ic.init_results_with_url_filter('*.hk01.com') # read / save
-'''
 
-#%%
-################# [TESTING] REDUCE RESULTS
-'''
+# reduce results
 ic.results = ic.results[:5] # for testing
 len(ic.results)
-'''
 
-#%%
-################# [TESTING] INSPECT RESULTS
-'''
+# inspect results
 ic.results # for testing
 ic.results[0]
-'''
 
-'''
 # find index of record with url == 'find_url'
 find_url = 'https://www.naturallyhealthierways.com/uf20200409/20200409111419221922.html'
 for i,x in enumerate(ic.results):
@@ -80,7 +72,7 @@ ic._save_single_record(ic.results[101])
 ################# DOWNLOAD
 print('[run] populate results')
 ic.populate_results(threads=THREADS) # single or multithreaded
-
-################# [TESTING] INSPECT RESULTS
-#%%
-#[x['content'] for x in ic.results]
+'''
+# inspect results
+[x['content'] for x in ic.results]
+'''
