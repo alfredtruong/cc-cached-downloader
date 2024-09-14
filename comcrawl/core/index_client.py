@@ -316,7 +316,7 @@ class IndexClient:
         ########################################
         # save
         ########################################
-        self.results = results
+        self.results = [d for d in results if not d['cached']]
     
     def init_results_with_url_filter(self, url: str, threads: int = None) -> None:
         """Search.
