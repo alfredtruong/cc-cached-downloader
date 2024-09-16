@@ -297,6 +297,7 @@ class IndexClient:
         # build results
         results = list(df.T.to_dict().values())
 
+        '''
         # get cached results
         raw_cached_filepaths = read_cache(index_cache_path(index,self.outdir),'filepath') # read info from all cached jsonls
         cached_filepaths = set(raw_cached_filepaths) # extract filepath identifiers
@@ -312,11 +313,13 @@ class IndexClient:
             else:
                 result['cached'] = False
         print(f'[init_results_with_athena_query_csvs] mark cached: {cache_counter} / {len(cached_filepaths)}')
+        '''
 
         ########################################
         # save
         ########################################
-        self.results = [d for d in results if not d['cached']]
+        self.results = results
+        #self.results = [d for d in results if not d['cached']]
     
     def init_results_with_url_filter(self, url: str, threads: int = None) -> None:
         """Search.

@@ -39,9 +39,8 @@ from fake_useragent import UserAgent
 ua = UserAgent()
 
 
-TIMEOUT_DURATION = 60
+TIMEOUT_DURATION = 5
 URL_TEMPLATE = "https://data.commoncrawl.org/{filename}"
-MAX_JSONL_LINES = 100_000
 
 '''
 {
@@ -225,7 +224,11 @@ def save_single_extract(result: Result, basepath: str) -> str:
     if extracted_content is None: extracted_content = ''
     filepath = extract_cache_path(result, basepath) # id for record
     if False: write_file(extracted_content, filepath) # write content extract into separate file
-    if True: write_cache([{'filepath':str(filepath),'content':extracted_content}],index_cache_path(index_from_result(result),basepath),MAX_JSONL_LINES) # write content extract to jsonl
+    if True: 
+        write_cache(
+            [{'filepath':str(filepath),'content':extracted_content}],
+            index_cache_path(index_from_result(result),basepath)
+        ) # write content extract to jsonl
 
     # return
     return extracted_content
@@ -233,8 +236,8 @@ def save_single_extract(result: Result, basepath: str) -> str:
 # read local if it exists
 def get_single_extract(result: Result, basepath: str) -> Result:
     # bail if already cached, i.e. content already extracted
-    #cache_path = extract_cache_path(result, basepath)
-    if result['cached']:
+    filepath = extract_cache_path(result, basepath)
+    if filepath.exists():
         #print(f'[get_single_extract][cache] {cache_path}')
         print('.')
         return result
@@ -244,9 +247,6 @@ def get_single_extract(result: Result, basepath: str) -> Result:
     #print(f'[get_single_extract][extract] {cache_path}')
     print('x')
     save_single_extract(result, basepath)
-
-    # indicate done
-    result['cached'] = True
 
     # return
     return result

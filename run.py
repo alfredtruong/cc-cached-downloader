@@ -10,7 +10,7 @@ for arg in sys.argv:
 	if 'ipykernel_launcher' in arg:
 		is_jupyter = True
 print(f'[run] is_jupyter = {is_jupyter}')
-# is_jupyter = True
+#is_jupyter = True
 
 # load settings
 if not is_jupyter:

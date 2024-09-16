@@ -139,12 +139,12 @@ def write_cache(listdict: list[dict], indexdir: str, max_json_lines: int = 10000
     """
     try:
 		# check if directory exists, if not create it
-        indexdir = Path(indexdir)
-        if not indexdir.exists():
-            indexdir.mkdir(parents=True, exist_ok=True) # name subdir
-            indexdir.chmod(0o777) # make accessible
-
         with lock:
+            indexdir = Path(indexdir)
+            if not indexdir.exists():
+                indexdir.mkdir(parents=True, exist_ok=True) # name subdir
+                indexdir.chmod(0o777) # make accessible
+
             # make jsonl if doesnt exist
             filepath = indexdir_to_jsonl(indexdir, indexdir.name)
             if not filepath.exists():
@@ -173,25 +173,8 @@ def write_cache(listdict: list[dict], indexdir: str, max_json_lines: int = 10000
                 pd_save_parquet(parquet_filepath,df)
 
                 # truncate jsonl
-                if overwrite:
-                    truncate_jsonl(filepath)
+                truncate_jsonl(filepath)
 
-                '''
-                # break jsonl up into parquet files
-                lines_written = 0
-                while line_count >= max_json_lines:
-                    line_max = max_json_lines
-                    # write compressed parquet
-                    parquet_filepath = next_parquet_filepath(indexdir,indexdir.name)
-                    pd_save_parquet(parquet_filepath,df[lines_written:lines_written+max_json_lines])
-                    lines_written += max_json_lines
-                    print(f'[write_cache][new parquet] {lines_written} / {line_count}')
-
-                # truncate
-                if overwrite:
-                    write_jsonl(filepath,df[lines_written:].to_dict(orient='records'),True)
-                    print(f'[write_cache][truncate jsonl] {lines_written} / {line_count}')
-                '''
     except Exception as e:
         print(f'[write_cache] exception {e}')
 
@@ -262,6 +245,10 @@ for index in ALL_INDEXES:
 '''
 '''
 # check single index
+c1=read_cache('/home/alfred/nfs/cc_zho/extracts/2019-22/')
+c1=read_cache('/home/alfred/nfs/cc_zho/extracts/2019-18/')
+
+
 c1=read_cache('/home/alfred/nfs/cc_zho/extracts/2019-43/') # done
 c2=read_cache('/home/alfred/nfs/cc_zho/extracts_redump/2019-43/') # done
 
@@ -409,21 +396,6 @@ def read_gzip(filepath: str, debug: bool = False) -> str:
     return raw_content
 '''
 read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,naturallyhealthierways/F5FP46JBQ27F6OCZ62DNI3FRAAEPHPTG.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,q100michigan/RETIYLQOXGBA43AGYRP2JF6YWZ4YD7Y4.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,8251777,as/A5KWTBSGMG3BGBV7YMUB7TARKM2VDHGM.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,8251777,as/RXJZ37WID5IT2J5H6CJ24M7WQUR4IFBZ.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,8251777,as/WRUL6NFBOPWV4FIUGIE3BVA564WR742K.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,8251777,as/YYYFUS4JISFHSGBGJPSTS2XW3S5FZC6A.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,apacdent/FL7P6ODP4HWLAQSOORJSCWJW34UFODZQ.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,beverly-group/HBA4WJE6XNRLYMQF27BDHL3CZJJA22J2.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,bigmeathammer/2TBHOI7RAX3YAKYBCS7JR64HXVKET3PU.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,draoproducciones/PSFAW7PVRXYZ6T6WT6CZS6WM6WCU636W.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,exhedra/GN63QXIBNC2GZTFIYRYHYPBMMK7HIKVX.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,exhedra/L2ZHFQJIPTHNY4FT7OSNAB3UGT6JARF2.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,globalcio/6XP4J5CXPF4RJHS4LZ7AJG24NHZYKBMP.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,indulgencewithatwist/XZIJEPXBUESCE2T7EHFMUK2KEQ3TDNEB.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,pctranslate,web/3D3JX4UFRPR7HYRGVHLAU73SYLP7L3AR.gz')
-read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,q100michigan/RETIYLQOXGBA43AGYRP2JF6YWZ4YD7Y4.gz')
 '''
 
 def strip_jsonl(filepath: str, target_location: str = None) -> None:
@@ -432,6 +404,7 @@ def strip_jsonl(filepath: str, target_location: str = None) -> None:
     '''
     filepath = Path(filepath)
     df = pd_read_jsonl(filepath) # read jsonl
+    if len(df) == 0: return
     df = df[df['content'].str.len() > 0] # strip rows with no content
     if target_location:
         # write to requested location
@@ -449,7 +422,6 @@ def strip_jsonl(filepath: str, target_location: str = None) -> None:
             write_jsonl(df.to_dict('records'),filepath_tmp,True) # write temp file
             os.system(f'mv {filepath} {filepath_bck}') # keep existing file
             os.system(f'mv {filepath_tmp} {filepath}') # move written file over
-            os.system(f'rm {filepath_tmp}') # remove temp file
 
         except Exception as e:
             print(f'[strip_jsonl][overwrite] error with {filepath_tmp}')
@@ -470,7 +442,9 @@ def strip_parquet(filepath: str, target_location: str = None) -> None:
     '''
     remove rows with no content
     '''
+    filepath = Path(filepath)
     df = pd_read_parquet(filepath) # read parquet
+    if len(df) == 0: return
     df = df[df['content'].str.len() > 0] # strip rows with no content
     if target_location:
         # write to requested location
@@ -485,13 +459,12 @@ def strip_parquet(filepath: str, target_location: str = None) -> None:
         filepath_bck = filepath.parent / f"{filepath.name}.bck" # where to move existing file
         try:
             print(f'[strip_parquet][overwrite] writing to {filepath_tmp}')
-            pd_save_parquet(df) # write temp file
+            pd_save_parquet(filepath_tmp,df) # write temp file
             os.system(f'mv {filepath} {filepath_bck}') # keep existing file
             os.system(f'mv {filepath_tmp} {filepath}') # move written file over
-            os.system(f'rm {filepath_tmp}') # remove temp file
 
         except Exception as e:
-            print(f'[strip_jsonl][overwrite] error with {filepath_tmp}')
+            print(f'[strip_parquet][overwrite] error with {filepath_tmp}')
 '''
 strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_0.parquet')
 strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_1.parquet')
@@ -527,6 +500,10 @@ def strip_cache(indexdir: str) -> None:
     except Exception as e:
         print(f'[strip_cache] exception {e}')
 '''
+strip_cache('/home/alfred/nfs/cc_zho/extracts/2019-22/')
+strip_cache('/home/alfred/nfs/cc_zho/extracts/2019-18/')
+strip_cache('/home/alfred/nfs/cc_zho/extracts/2020-05/')
+
 for index in BATCH_2:
     strip_cache(f'/home/alfred/nfs/cc_zho/extracts/{index}/')
 '''
@@ -570,15 +547,8 @@ def redump_cache(indexdir: str, max_json_lines: int = 10000) -> None:
     except Exception as e:
         print(f'[redump_cache] exception {e}')
 '''
-redump_cache('/home/alfred/nfs/cc_zho/extracts/2019-43/') # done
-redump_cache('/home/alfred/nfs/cc_zho/extracts/2024-33/') # done
-redump_cache('/home/alfred/nfs/cc_zho/extracts/2024-30/') # done
-redump_cache('/home/alfred/nfs/cc_zho/extracts/2024-26/') # done
-redump_cache('/home/alfred/nfs/cc_zho/extracts/2024-22/') # done
-redump_cache('/home/alfred/nfs/cc_zho/extracts/2024-18/') # done
-redump_cache('/home/alfred/nfs/cc_zho/extracts/2024-10/') # done
-redump_cache('/home/alfred/nfs/cc_zho/extracts/2023-50/') # done
-redump_cache('/home/alfred/nfs/cc_zho/extracts/2023-40/') # done
+redump_cache('/home/alfred/nfs/cc_zho/extracts/2019-22/')
+redump_cache('/home/alfred/nfs/cc_zho/extracts/2019-18/')
 
 for index in ALL_INDEXES:
     redump_cache(f'/home/alfred/nfs/cc_zho/extracts/{index}/')
@@ -607,14 +577,6 @@ def pd_save_parquet(filepath: str, df: pd.DataFrame) -> None:
     except Exception as e:
         print(f'[pd_save_parquet] exception {e}')
 
-'''
-df.to_parquet('/home/alfred/nfs/cc_zho/extracts/2023-40/abc_snappy.parquet',compression='snappy') # snappy
-df.to_parquet('/home/alfred/nfs/cc_zho/extracts/2023-40/abc_gzip.parquet',compression='gzip')  # gzip
-df.to_parquet('/home/alfred/nfs/cc_zho/extracts/2023-40/abc_lz4.parquet',compression='lz4')   # lz4
-df.to_parquet('/home/alfred/nfs/cc_zho/extracts/2023-40/abc_zstd.parquet',compression='zstd')  # zstd
-df.to_parquet('/home/alfred/nfs/cc_zho/extracts/2023-40/abc_brotli.parquet',compression='brotli') # brotli
-'''
-
 # read parquet
 def pd_read_parquet(filepath: str, columns: list = None) -> pd.DataFrame:
     try:
@@ -623,47 +585,7 @@ def pd_read_parquet(filepath: str, columns: list = None) -> pd.DataFrame:
     except Exception as e:
         print(f"Error reading the Parquet file: {e}")
 '''
-%%timeit
-df = pd_read_parquet('/home/alfred/nfs/cc_zho/extracts/2023-23/2023-23_0.parquet')
-%%timeit
-df = pd_read_parquet('/home/alfred/nfs/cc_zho/extracts/2023-23/2023-23_0.parquet',['content'])
-~/nfs/cc_zho/extracts/2023-23/2023-23_9.parquet
-df = pd_read_parquet('/home/alfred/nfs/cc_zho/extracts/2023-40/2023-40_0.parquet')
-df = pd_read_parquet('/home/alfred/nfs/cc_zho/extracts/2022-40/2022-40_0.parquet')
 df = pd_read_parquet('/home/alfred/nfs/cc_zho/extracts/2019-43/2019-43_1.parquet')
-'''
-#%%
-
-'''
-# error with ~/nfs/cc_zho/extracts/2019-43
-jl = pd_read_jsonl('/home/alfred/nfs/cc_zho/extracts/2019-43/2019-43.jsonl')
-pq205 = pd_read_parquet('/home/alfred/nfs/cc_zho/extracts/2019-43/2019-43_205.parquet')
-pq206 = pd_read_parquet('/home/alfred/nfs/cc_zho/extracts/2019-43/2019-43_206.parquet')
-pq0 = pd_read_parquet('/home/alfred/nfs/cc_zho/extracts/2019-43/2019-43_0.parquet')
-
-jl[:10]['filepath'].to_list()
-pq0[:10]['filepath'].to_list()
-pq206[:10]['filepath'].to_list()
-
-
-set_jl=set(jl['filepath'])
-set_pq0=set(pq0['filepath'])
-set_pq205=set(pq205['filepath'])
-set_pq206=set(pq206['filepath'])
-
-len(set_pq206-set_pq205)
-len(set_pq206-set_pq0)
-
-
-jl2=jl[jl.content.str.len()>0]
-set_jl2=set(jl2['filepath'])
-
-jl2-pq0
-
-jl
-
-filtered_jl = jl[jl['filepath'].isin(set_jl)]
-
 '''
 
 if __name__ == "__main__":
@@ -708,3 +630,5 @@ if __name__ == "__main__":
                 print(f'[{index}] df1 = {len(df1)}, df2 = {len(df2)}, diff = {len(df1)-len(df2)}')
             except Exception as e:
                 print(e)
+
+#%%
