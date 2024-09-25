@@ -16,32 +16,32 @@ lock = threading.Lock()
 # json
 ################################################################################
 # write json
-def write_json(obj:object, filepath: str) -> None:
-    #print(f'[write_json] {filepath}')
+def write_json(obj:object, json_fp: str) -> None:
+    #print(f'[write_json] {json_fp}')
     try:
 		# check if directory exists, if not create it
-        indexdir = Path(filepath).parent
+        indexdir = Path(json_fp).parent
         if not indexdir.exists():
-            indexdir.mkdir(parents=True, exist_ok=True) # name subdir
+            indexdir.mkdir(parents=True, exist_ok=True) # create subdir
             indexdir.chmod(0o777) # make accessible
 
         with lock:
             # write new file
-            with open(filepath, 'w', encoding='utf-8') as f:
+            with open(json_fp, 'w', encoding='utf-8') as f:
                 f.write(json.dumps(obj))
 
             # make accessible
-            os.chmod(filepath, 0o777)
+            os.chmod(json_fp, 0o777)
 
     except Exception as e:
 	    print(f'[write_json] exception {e}')
 
 # read json
-def read_json(filepath: str) -> list:
-    #print(f'[read_json] {filepath}')
+def read_json(json_fp: str) -> list:
+    #print(f'[read_json] {json_fp}')
     res = []
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(json_fp, 'r', encoding='utf-8') as f:
             res = json.load(f)
 
     except Exception as e:
@@ -53,44 +53,44 @@ def read_json(filepath: str) -> list:
 # jsonl
 ################################################################################
 # truncate jsonl (use within a lock)
-def truncate_jsonl(filepath: str) -> None:
-    with open(filepath, 'w', encoding='utf-8') as f: 
+def truncate_jsonl(jsonl_fp: str) -> None:
+    with open(jsonl_fp, 'w', encoding='utf-8') as f: 
         f.truncate(0)
 
 # write jsonl
-def write_jsonl(listdict:list[object], filepath: str, truncate: bool = False) -> None:
-    #print(f'[write_jsonl] {filepath}')
+def write_jsonl(listdict:list[object], jsonl_fp: str, truncate: bool = False) -> None:
+    #print(f'[write_jsonl] {jsonl_fp}')
     try:
 		# check if directory exists, if not create it
-        indexdir = Path(filepath).parent
+        indexdir = Path(jsonl_fp).parent
         if not indexdir.exists():
-            indexdir.mkdir(parents=True, exist_ok=True) # name subdir
+            indexdir.mkdir(parents=True, exist_ok=True) # create subdir
             indexdir.chmod(0o777) # make accessible
 
         with lock:
             # should truncate first or not?
             if truncate:
-                truncate_jsonl(filepath)
+                truncate_jsonl(jsonl_fp)
 
             # append
-            with open(filepath, 'a', encoding='utf-8') as f:
+            with open(jsonl_fp, 'a', encoding='utf-8') as f:
                 # write list dicts to jsonl
                 for d in listdict:
                     line = json.dumps(d, ensure_ascii=False) # build line
                     f.write(line + '\n') # write line
 
             # make accessible
-            os.chmod(filepath, 0o777)
+            os.chmod(jsonl_fp, 0o777)
 
     except Exception as e:
 	    print(f'[write_jsonl] exception {e}')
 
 # read jsonl
-def read_jsonl(filepath: str) -> list[dict]:
-    #print(f'[read_jsonl] {filepath}')
+def read_jsonl(jsonl_fp: str) -> list[dict]:
+    #print(f'[read_jsonl] {jsonl_fp}')
     lines: list[dict] = []
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(jsonl_fp, 'r', encoding='utf-8') as f:
             lines = f.readlines()
 
     except Exception as e:
@@ -102,6 +102,9 @@ def read_jsonl(filepath: str) -> list[dict]:
 ################################################################################
 def indexdir_to_jsonl(indexdir: Path, prefix: str) -> Path:
     return indexdir / f'{prefix}.jsonl'
+
+def indexdir_to_empties(indexdir: Path, prefix: str) -> Path:
+    return indexdir / f'{prefix}.txt'
 
 def next_parquet_filepath(indexdir: Path, index: str) -> Path:
     # get correct index for next parquet
@@ -140,40 +143,57 @@ def write_cache(listdict: list[dict], indexdir: str, max_json_lines: int = 10000
     try:
 		# check if directory exists, if not create it
         with lock:
+            # ensure directory exists
             indexdir = Path(indexdir)
             if not indexdir.exists():
-                indexdir.mkdir(parents=True, exist_ok=True) # name subdir
+                indexdir.mkdir(parents=True, exist_ok=True) # create subdir
                 indexdir.chmod(0o777) # make accessible
 
-            # make jsonl if doesnt exist
-            filepath = indexdir_to_jsonl(indexdir, indexdir.name)
-            if not filepath.exists():
-                filepath.touch()
-                os.chmod(filepath, 0o777)
-                
+            # ensure jsonl exist
+            jsonl_fp = indexdir_to_jsonl(indexdir, indexdir.name)
+            if not jsonl_fp.exists():
+                jsonl_fp.touch()
+                os.chmod(jsonl_fp, 0o777)
+
+            # ensure txt for empty links exist
+            empties_fp = indexdir_to_empties(indexdir, indexdir.name)
+            if not empties_fp.exists():
+                empties_fp.touch()
+                os.chmod(empties_fp, 0o777)
+
             # count lines
             line_count = 0
-            with open(filepath, 'r', encoding='utf-8') as f:
+            with open(jsonl_fp, 'r', encoding='utf-8') as f:
                 line_count = sum(1 for _ in f)
 
-            # write
-            with open(filepath, 'a', encoding='utf-8') as f:
+            # write entries and filter for empties
+            empty_entries = []
+            with open(jsonl_fp, 'a', encoding='utf-8') as f:
                 for d in listdict:
-                    line = json.dumps(d, ensure_ascii=False).encode('utf-8').decode('utf-8')
-                    f.write(line + '\n')
-                    line_count += 1
+                    if len(d['content']) == 0:
+                        empty_entries.append(d['filepath'])
+                    else:
+                        line = json.dumps(d, ensure_ascii=False).encode('utf-8').decode('utf-8')
+                        f.write(line + '\n')
+                        line_count += 1
+
+            # write empty entries to empties_fp
+            if empty_entries:
+                with open(empties_fp, 'a', encoding='utf-8') as f:
+                    for fp in empty_entries:
+                        f.write(fp + '\n')
 
             # if JSONL line count exceeds the maximum, write the data to a Parquet file and clear the JSONL file
             if line_count >= max_json_lines:
                 # get contents
-                df = pd_read_jsonl(filepath)
+                df = pd_read_jsonl(jsonl_fp)
 
                 # write compressed parquet
                 parquet_filepath = next_parquet_filepath(indexdir,indexdir.name)
                 pd_save_parquet(parquet_filepath,df)
 
                 # truncate jsonl
-                truncate_jsonl(filepath)
+                truncate_jsonl(jsonl_fp)
 
     except Exception as e:
         print(f'[write_cache] exception {e}')
@@ -205,10 +225,10 @@ def read_cache(indexdir: str, column_name: str = None) -> list[dict]:
             print(f"[read_cache][read parquet] {parquet_file} {parquet_read_time:.2f}s, records = {len(df)}, emptys = {emptys}, empty_ratio = {safe_div(emptys,len(df)):.4f}")
 
         # read jsonl
-        filepath = indexdir_to_jsonl(indexdir, indexdir.name)
-        if os.path.exists(filepath):
+        jsonl_fp = indexdir_to_jsonl(indexdir, indexdir.name)
+        if os.path.exists(jsonl_fp):
             start_time = time.time()
-            df = pd_read_jsonl(filepath)
+            df = pd_read_jsonl(jsonl_fp)
             if column_name:
                 result.extend([x[column_name] for x in df.to_dict(orient='records')])
             else:
@@ -218,7 +238,7 @@ def read_cache(indexdir: str, column_name: str = None) -> list[dict]:
             # summarize jsonl
             emptys = sum(df['content'].str.len() == 0)
             total_emptys += emptys
-            print(f"[read_cache][read jsonl] {filepath} {jsonl_read_time:.2f}s, records = {len(df)}, emptys = {emptys}, empty_ratio = {safe_div(emptys,len(df)):.4f}")
+            print(f"[read_cache][read jsonl] {jsonl_fp} {jsonl_read_time:.2f}s, records = {len(df)}, emptys = {emptys}, empty_ratio = {safe_div(emptys,len(df)):.4f}")
 
     except Exception as e:
         print(f'[read_cache] exception {e}')
@@ -242,31 +262,6 @@ for index in ALL_INDEXES:
 # batch check all indexes
 for index in ALL_INDEXES:
     read_cache(f'/home/alfred/nfs/cc_zho/extracts/{index}/') # actual
-'''
-'''
-# check single index
-c1=read_cache('/home/alfred/nfs/cc_zho/extracts/2019-22/')
-c1=read_cache('/home/alfred/nfs/cc_zho/extracts/2019-18/')
-
-
-c1=read_cache('/home/alfred/nfs/cc_zho/extracts/2019-43/') # done
-c2=read_cache('/home/alfred/nfs/cc_zho/extracts_redump/2019-43/') # done
-
-read_cache('/home/alfred/nfs/cc_zho/extracts/2023-40/'); # done
-read_cache('/home/alfred/nfs/cc_zho/extracts_TRASH/2023-40/'); # done
-
-# strip jsonl
-strip_jsonl('/home/alfred/nfs/cc_zho/extracts_TRASH/2023-40/2023-40.jsonl')
-
-# batch strip jsonl
-for index in BATCH_3[1:]:
-    #strip_jsonl(f'/home/alfred/nfs/cc_zho/extracts_TRASH/{index}/{index}.jsonl') # testing
-    strip_jsonl(f'/home/alfred/nfs/cc_zho/extracts/{index}/{index}.jsonl') # actual
-
-# batch check jsonl
-for index in BATCH_3:
-    #read_cache(f'/home/alfred/nfs/cc_zho/extracts_TRASH/{index}/') # testing
-    read_cache(f'/home/alfred/nfs/cc_zho/extracts/{index}/') # actual
 
 # batch verify nothing lost
 for index in BATCH_2:
@@ -281,51 +276,39 @@ for index in BATCH_2[1:]:
     os.system(f'mv /home/alfred/nfs/cc_zho/extracts_TRASH/{index}/{index} /home/alfred/nfs/cc_zho/extracts/')
 '''
 
-'''
-# move parquet contents to jsonl
-strip_parquet('/home/alfred/nfs/cc_zho/extracts/2023-50/2023-50_0.parquet')
-df = pd_read_parquet('/home/alfred/nfs/cc_zho/extracts/2023-50/2023-50_0.parquet')
-write_jsonl(df.to_dict('records'),'/home/alfred/nfs/cc_zho/extracts/2023-50/2023-50.jsonl')
-
-# make sure nothing lost
-df1 = pd_read_parquet('/home/alfred/nfs/cc_zho/extracts/2023-50/2023-50_0.parquet')
-df2 = pd_read_jsonl('/home/alfred/nfs/cc_zho/extracts/2023-50/2023-50.jsonl')
-len(df1)-len(df2)
-'''
-
 ################################################################################
 # file
 ################################################################################
 # write file
-def write_file(obj:object, filepath: str) -> None:
-    #print(f'[write_file] {filepath}')
+def write_file(obj:object, fp: str) -> None:
+    #print(f'[write_file] {fp}')
     try:
 		# check if directory exists, if not create it
-        indexdir = Path(filepath).parent
+        indexdir = Path(fp).parent
         if not indexdir.exists():
-            indexdir.mkdir(parents=True, exist_ok=True) # name subdir
+            indexdir.mkdir(parents=True, exist_ok=True) # create subdir
             indexdir.chmod(0o777) # make accessible
 
         with lock:
-            with open(filepath, 'w', encoding='utf-8') as f:
+            with open(fp, 'w', encoding='utf-8') as f:
                 if obj is None:
                     f.write('')
                 else:
                     f.write(str(obj))
 
                 # make accessible
-                os.chmod(filepath, 0o777)
+                os.chmod(fp, 0o777)
 
     except Exception as e:
 	    print(f'[write_file] exception {e}')
     
 # read file
-def read_file(filepath: str) -> list[str]:
-    #print(f'[read_file] {filepath}')
+def read_file(fp: str) -> list[str]:
+    #print(f'[read_file] {fp}')
     lines: list[str] = []
     try:
-        if os.path.exists(filepath):
-            with open(filepath, 'r', encoding='utf-8') as f:
+        if os.path.exists(fp):
+            with open(fp, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
 
     except Exception as e:
@@ -337,32 +320,32 @@ def read_file(filepath: str) -> list[str]:
 # gzip
 ################################################################################
 # write gzip
-def write_gzip(content:object, filepath: str) -> None:
-    #print(f'[write_gzip] {filepath}')
+def write_gzip(content:object, gzip_fp: str) -> None:
+    #print(f'[write_gzip] {gzip_fp}')
     try:
 		# check if directory exists, if not create it
-        indexdir = Path(filepath).parent
+        indexdir = Path(gzip_fp).parent
         if not indexdir.exists():
-            indexdir.mkdir(parents=True, exist_ok=True) # name subdir
+            indexdir.mkdir(parents=True, exist_ok=True) # create subdir
             indexdir.chmod(0o777) # make accessible
 
-        with open(filepath, "wb") as f:
+        with open(gzip_fp, "wb") as f:
             f.write(content)
 
             # make accessible
-            os.chmod(filepath, 0o777)
+            os.chmod(gzip_fp, 0o777)
 
     except Exception as e:
 	    print(f'[write_gzip] exception {e}')
         
 # read gzip
-def read_gzip(filepath: str, debug: bool = False) -> str:
-    #print(f'[read_gzip] {filepath}')
+def read_gzip(gzip_fp: str, debug: bool = False) -> str:
+    #print(f'[read_gzip] {gzip_fp}')
     raw_content: str = ''
     try:
-        if os.path.exists(filepath):
+        if os.path.exists(gzip_fp):
             # read contents
-            with gzip.open(filepath, 'rb') as f:
+            with gzip.open(gzip_fp, 'rb') as f:
                 content = f.read()
 
             # for manual debugging
@@ -398,12 +381,12 @@ def read_gzip(filepath: str, debug: bool = False) -> str:
 read_gzip('/home/alfred/nfs/cc_zho_2/records/2024-10/com,naturallyhealthierways/F5FP46JBQ27F6OCZ62DNI3FRAAEPHPTG.gz')
 '''
 
-def strip_jsonl(filepath: str, target_location: str = None) -> None:
+def strip_jsonl(jsonl_fp: str, target_location: str = None) -> None:
     '''
     remove lines with no content
     '''
-    filepath = Path(filepath)
-    df = pd_read_jsonl(filepath) # read jsonl
+    jsonl_fp = Path(jsonl_fp)
+    df = pd_read_jsonl(jsonl_fp) # read jsonl
     if len(df) == 0: return
     df = df[df['content'].str.len() > 0] # strip rows with no content
     if target_location:
@@ -415,35 +398,26 @@ def strip_jsonl(filepath: str, target_location: str = None) -> None:
         except Exception as e:
             print(f'[strip_jsonl][custom path] error')
     else:
-        filepath_tmp = filepath.parent / f"{filepath.name}.tmp" # where to write stripped jsonl
-        filepath_bck = filepath.parent / f"{filepath.name}.bck" # where to move existing file
+        filepath_tmp = jsonl_fp.parent / f"{jsonl_fp.name}.tmp" # where to write stripped jsonl
+        filepath_bck = jsonl_fp.parent / f"{jsonl_fp.name}.bck" # where to move existing file
         try:
             print(f'[strip_jsonl][overwrite] writing to {filepath_tmp}')
             write_jsonl(df.to_dict('records'),filepath_tmp,True) # write temp file
-            os.system(f'mv {filepath} {filepath_bck}') # keep existing file
-            os.system(f'mv {filepath_tmp} {filepath}') # move written file over
+            os.system(f'mv {jsonl_fp} {filepath_bck}') # keep existing file
+            os.system(f'mv {filepath_tmp} {jsonl_fp}') # move written file over
 
         except Exception as e:
             print(f'[strip_jsonl][overwrite] error with {filepath_tmp}')
 '''
-filepath='/home/alfred/nfs/cc_zho/extracts/2023-40/2023-40.jsonl'
 strip_jsonl('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33.jsonl')
-
-
-strip_jsonl('/home/alfred/nfs/cc_zho/extracts/2019-43/2019-43.jsonl_duplicated3')
-strip_jsonl('/home/alfred/nfs/cc_zho/extracts/2019-43/2019-43.jsonl_duplicated3','/home/alfred/nfs/cc_zho/extracts/2019-43/2019-43.jsonl_duplicated4')
-
-filepath='/home/alfred/nfs/cc_zho/extracts/2019-43/2019-43b.jsonl'
-strip_jsonl('/home/alfred/nfs/cc_zho/extracts/2019-43/2019-43b.jsonl') # strip and keep backup
-strip_jsonl('/home/alfred/nfs/cc_zho/extracts/2019-43/2019-43b.jsonl','/home/alfred/nfs/cc_zho/extracts/2019-43/2019-43c.jsonl') # strip and write somewhere else
 '''
 
-def strip_parquet(filepath: str, target_location: str = None) -> None:
+def strip_parquet(parquet_fp: str, target_location: str = None) -> None:
     '''
     remove rows with no content
     '''
-    filepath = Path(filepath)
-    df = pd_read_parquet(filepath) # read parquet
+    parquet_fp = Path(parquet_fp)
+    df = pd_read_parquet(parquet_fp) # read parquet
     if len(df) == 0: return
     df = df[df['content'].str.len() > 0] # strip rows with no content
     if target_location:
@@ -455,30 +429,18 @@ def strip_parquet(filepath: str, target_location: str = None) -> None:
         except Exception as e:
             print(f'[strip_parquet][custom path] error with {target_location}')
     else:
-        filepath_tmp = filepath.parent / f"{filepath.name}.tmp" # where to write stripped jsonl
-        filepath_bck = filepath.parent / f"{filepath.name}.bck" # where to move existing file
+        filepath_tmp = parquet_fp.parent / f"{parquet_fp.name}.tmp" # where to write stripped jsonl
+        filepath_bck = parquet_fp.parent / f"{parquet_fp.name}.bck" # where to move existing file
         try:
             print(f'[strip_parquet][overwrite] writing to {filepath_tmp}')
             pd_save_parquet(filepath_tmp,df) # write temp file
-            os.system(f'mv {filepath} {filepath_bck}') # keep existing file
-            os.system(f'mv {filepath_tmp} {filepath}') # move written file over
+            os.system(f'mv {parquet_fp} {filepath_bck}') # keep existing file
+            os.system(f'mv {filepath_tmp} {parquet_fp}') # move written file over
 
         except Exception as e:
             print(f'[strip_parquet][overwrite] error with {filepath_tmp}')
 '''
 strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_0.parquet')
-strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_1.parquet')
-strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_2.parquet')
-strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_3.parquet')
-strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_4.parquet')
-strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_5.parquet')
-strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_6.parquet')
-strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_7.parquet')
-strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_8.parquet')
-strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_9.parquet')
-strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_10.parquet')
-strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_11.parquet')
-strip_parquet('/home/alfred/nfs/cc_zho/extracts/2024-33/2024-33_12.parquet')
 '''
 
 def strip_cache(indexdir: str) -> None:
@@ -493,19 +455,44 @@ def strip_cache(indexdir: str) -> None:
             strip_parquet(parquet_file)
 
         # strip JSONL file
-        filepath = indexdir_to_jsonl(indexdir, indexdir.name)
-        if os.path.exists(filepath):
-            strip_jsonl(filepath)
+        jsonl_fp = indexdir_to_jsonl(indexdir, indexdir.name)
+        if os.path.exists(jsonl_fp):
+            strip_jsonl(jsonl_fp)
 
     except Exception as e:
         print(f'[strip_cache] exception {e}')
 '''
 strip_cache('/home/alfred/nfs/cc_zho/extracts/2019-22/')
-strip_cache('/home/alfred/nfs/cc_zho/extracts/2019-18/')
-strip_cache('/home/alfred/nfs/cc_zho/extracts/2020-05/')
 
-for index in BATCH_2:
+for index in ALL_INDEXES:
     strip_cache(f'/home/alfred/nfs/cc_zho/extracts/{index}/')
+'''
+
+def move_redumped_cache(indexdir: str, action: bool = False) -> None:
+    try:
+        #print(f'[move_redumped_cache] indexdir = {indexdir}')
+        indexdir_redumped = Path(str(indexdir).replace('/extracts/','/extracts_redump/')) # save to new directory
+        #print(indexdir_redumped)
+        indexdir_bck = Path(indexdir_redumped).parent / f'{Path(indexdir_redumped).name}_bck' # where to backup old cache
+        #print(indexdir_bck)
+
+        if indexdir_bck.exists():
+            # no need to move it if it's already been moved
+            print(f'[move_redumped_cache][pass] {indexdir}')
+        else:
+            # move it if it hasn't been moved
+            save_cmd = f'mv {indexdir} {indexdir_bck}'
+            print(f'[move_redumped_cache][save] {indexdir}')
+            if action: os.system(save_cmd) # save existing
+            take_cmd = f'mv {indexdir_redumped} {indexdir}'
+            #print(f'[move_redumped_cache][take] {indexdir_redumped}')
+            if action: os.system(take_cmd) # move written file over
+
+    except Exception as e:
+        print(f'[move_redumped_cache][error] {indexdir}')
+'''
+for index in ALL_INDEXES:
+    move_redumped_cache(f'/home/alfred/nfs/cc_zho/extracts/{index}/')
 '''
 
 def redump_cache(indexdir: str, max_json_lines: int = 10000) -> None:
@@ -513,42 +500,45 @@ def redump_cache(indexdir: str, max_json_lines: int = 10000) -> None:
     read all jsonl and parquet files then redump new files that satisfy `max_json_lines`, i.e. apply after `strip_cache`
     '''
     try:
+        print(f'[redump_cache] indexdir = {indexdir}')
         # read cache
-        #strip_cache(indexdir)
+        strip_cache(indexdir)
         listdict = read_cache(indexdir)
 
 		# check if directory exists, if not create it
-        indexdir = Path(str(indexdir).replace('/extracts/','/extracts_redump/')) # save to new directory
-        if not indexdir.exists():
-            indexdir.mkdir(parents=True, exist_ok=True) # name subdir
-            indexdir.chmod(0o777) # make accessible
+        indexdir_redumped = Path(str(indexdir).replace('/extracts/','/extracts_redump/')) # save to new directory
+        if not indexdir_redumped.exists():
+            indexdir_redumped.mkdir(parents=True, exist_ok=True) # create subdir
+            indexdir_redumped.chmod(0o777) # make accessible
 
-        # write new parquets
+        # write new cache
         current_line = 0
         while current_line < len(listdict):
             if (current_line + max_json_lines) < len(listdict):
                 # write compressed parquet
-                parquet_filepath = next_parquet_filepath(indexdir,indexdir.name)
+                parquet_filepath = next_parquet_filepath(indexdir_redumped,indexdir_redumped.name)
                 pd_save_parquet(parquet_filepath,pd.DataFrame.from_records(listdict[current_line:current_line + max_json_lines]))
                 current_line += max_json_lines
                 print(f'[redump_cache] current_line = {current_line},  fp = {parquet_filepath}')
                 os.chmod(parquet_filepath, 0o777) # make accessible
             else:
                 # write jsonl
-                filepath = indexdir_to_jsonl(indexdir, indexdir.name)
-                with open(filepath, 'w', encoding='utf-8') as f:
+                jsonl_fp = indexdir_to_jsonl(indexdir_redumped, indexdir_redumped.name)
+                with open(jsonl_fp, 'w', encoding='utf-8') as f:
                     for d in listdict[current_line:]:
                         line = json.dumps(d, ensure_ascii=False).encode('utf-8').decode('utf-8')
                         f.write(line + '\n')
                         current_line += 1
-                print(f'[redump_cache] current_line = {current_line},  fp = {filepath}')
-                os.chmod(filepath, 0o777) # make accessible
+                print(f'[redump_cache] current_line = {current_line},  fp = {jsonl_fp}')
+                os.chmod(jsonl_fp, 0o777) # make accessible
+
+        # move extracts_redump into original directory
+        move_redumped_cache(indexdir,True)
 
     except Exception as e:
         print(f'[redump_cache] exception {e}')
 '''
 redump_cache('/home/alfred/nfs/cc_zho/extracts/2019-22/')
-redump_cache('/home/alfred/nfs/cc_zho/extracts/2019-18/')
 
 for index in ALL_INDEXES:
     redump_cache(f'/home/alfred/nfs/cc_zho/extracts/{index}/')
@@ -558,29 +548,29 @@ for index in ALL_INDEXES:
 # pandas
 ################################################################################
 # read jsonl
-def pd_read_jsonl(filepath: str) -> pd.DataFrame:
-    return pd.read_json(filepath, lines=True)
+def pd_read_jsonl(jsonl_fp: str) -> pd.DataFrame:
+    return pd.read_json(jsonl_fp, lines=True)
 '''
 pd.read_json('/home/alfred/nfs/cc_zho/extracts/2023-40/abc.jsonl', lines=True)
 '''
 
 # save parquet
-def pd_save_parquet(filepath: str, df: pd.DataFrame) -> None:
+def pd_save_parquet(parquet_fp: str, df: pd.DataFrame) -> None:
     try:
-        df.to_parquet(filepath,compression='snappy') # snappy
-        #df.to_parquet(filepath,compression='gzip')  # gzip
-        #df.to_parquet(filepath,compression='lz4')   # lz4
-        #df.to_parquet(filepath,compression='zstd')  # zstd
-        #df.to_parquet(filepath,compression='brotli') # brotli
-        os.chmod(filepath, 0o777) # make accessible
+        df.to_parquet(parquet_fp,compression='snappy') # snappy
+        #df.to_parquet(parquet_fp,compression='gzip')  # gzip
+        #df.to_parquet(parquet_fp,compression='lz4')   # lz4
+        #df.to_parquet(parquet_fp,compression='zstd')  # zstd
+        #df.to_parquet(parquet_fp,compression='brotli') # brotli
+        os.chmod(parquet_fp, 0o777) # make accessible
 
     except Exception as e:
         print(f'[pd_save_parquet] exception {e}')
 
 # read parquet
-def pd_read_parquet(filepath: str, columns: list = None) -> pd.DataFrame:
+def pd_read_parquet(parquet_fp: str, columns: list = None) -> pd.DataFrame:
     try:
-        df = pd.read_parquet(filepath, columns=columns)
+        df = pd.read_parquet(parquet_fp, columns=columns)
         return df
     except Exception as e:
         print(f"Error reading the Parquet file: {e}")
@@ -588,6 +578,7 @@ def pd_read_parquet(filepath: str, columns: list = None) -> pd.DataFrame:
 df = pd_read_parquet('/home/alfred/nfs/cc_zho/extracts/2019-43/2019-43_1.parquet')
 '''
 
+#%%
 if __name__ == "__main__":
     ALL_INDEXES = [os.path.basename(index) for index in sorted(glob.glob('/home/alfred/nfs/cc_zho/extracts/*'))] # list of extracted indexes
 
@@ -610,16 +601,6 @@ if __name__ == "__main__":
                 except Exception as e:
                     print(e)
 
-    # check contents of original directories that are missing in the redump
-    if False:
-        for index in ['2020-05','2020-16','2020-40','2023-23','2024-33']:
-            df1=read_cache(f'/home/alfred/nfs/cc_zho/extracts/{index}/')
-
-    # fix missing redumps
-    if False:
-        for index in ['2020-05','2020-16','2020-40','2024-33','2023-23']:
-            redump_cache(f'/home/alfred/nfs/cc_zho/extracts/{index}/')
-
     # check if redumped data is the same as original data
     if False:
         for index in ['2020-05','2020-16','2020-40','2024-33','2023-23']:
@@ -630,5 +611,9 @@ if __name__ == "__main__":
                 print(f'[{index}] df1 = {len(df1)}, df2 = {len(df2)}, diff = {len(df1)-len(df2)}')
             except Exception as e:
                 print(e)
+
+    if False:
+        for index in ALL_INDEXES:
+            redump_cache(f'/home/alfred/nfs/cc_zho/extracts/{index}/')
 
 #%%

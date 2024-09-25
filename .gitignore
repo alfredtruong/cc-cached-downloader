@@ -1,5 +1,7 @@
 # testing
 data/
+check_results.py
+out
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
