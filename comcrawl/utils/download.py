@@ -11,7 +11,7 @@ import requests
 from requests.exceptions import ReadTimeout,RequestException
 from trafilatura import extract # strip content from html files
 from urllib.parse import urlparse
-from .types import Index,ResultList,Result
+from .custom_types import Index,ResultList,Result
 from .cache import write_file,read_gzip,write_gzip,write_cache
 from .multithreading import make_multithreaded
 #from warcio.archiveiterator import ArchiveIterator
@@ -222,11 +222,11 @@ def save_single_extract(result: Result, basepath: str) -> str:
 
     # cache
     if extracted_content is None: extracted_content = ''
-    filepath = extract_cache_path(result, basepath) # id for record
-    if False: write_file(extracted_content, filepath) # write content extract into separate file
+    fp = extract_cache_path(result, basepath) # id for record
+    if False: write_file(extracted_content, fp) # write content extract into separate file
     if True: 
         write_cache(
-            [{'filepath':str(filepath),'content':extracted_content}],
+            [{'filepath':str(fp),'content':extracted_content}],
             index_cache_path(index_from_result(result),basepath)
         ) # write content extract to jsonl
 
@@ -236,8 +236,8 @@ def save_single_extract(result: Result, basepath: str) -> str:
 # read local if it exists
 def get_single_extract(result: Result, basepath: str) -> Result:
     # bail if already cached, i.e. content already extracted
-    filepath = extract_cache_path(result, basepath)
-    if filepath.exists():
+    fp = extract_cache_path(result, basepath)
+    if fp.exists():
         #print(f'[get_single_extract][cache] {cache_path}')
         print('.')
         return result
