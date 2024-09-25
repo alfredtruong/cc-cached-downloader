@@ -11,7 +11,7 @@ from pathlib import Path
 import requests
 from requests.exceptions import ReadTimeout,RequestException
 from urllib.parse import quote
-from .types import ResultList,IndexList
+from .custom_types import ResultList,IndexList
 from .cache import read_jsonl,write_jsonl
 from .multithreading import make_multithreaded
 from fake_useragent import UserAgent

@@ -6,7 +6,7 @@ This module contains the core object of the package.
 
 import logging
 from pathlib import Path
-from ..utils.types import Index, IndexList, ResultList
+from ..utils.custom_types import Index, IndexList, ResultList
 from ..utils import (
     download_available_indexes,
     save_single_record,save_single_extract,

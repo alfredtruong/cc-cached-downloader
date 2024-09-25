@@ -6,7 +6,7 @@ initializing the Index Client.
 """
 
 import requests
-from .types import IndexList
+from .custom_types import IndexList
 
 INDEX_LIST = "https://index.commoncrawl.org/collinfo.json"
 
