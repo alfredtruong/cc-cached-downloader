@@ -1,5 +1,5 @@
 import pandas as pd
-from comcrawl.utils.download import save_single_record,get_multiple_extracts
+from comcrawl.utils.download import request_single_record,get_multiple_extracts
 
 KNOWN_RESULT = {
     'urlkey': 'org,commoncrawl,index)/',
@@ -47,18 +47,18 @@ KNOWN_RESULT_NO_CONTENT_ERROR_HANDLING = {
     'mime': 'image/jpeg'}
 
 
-def test_save_single_record(snapshot):
-    result = save_single_record(KNOWN_RESULT)
+def test_request_single_record(snapshot):
+    result = request_single_record(KNOWN_RESULT)
     snapshot.assert_match(result["content"])
 
 
-def test_save_single_record_without_content():
-    result = save_single_record(KNOWN_RESULT_NO_CONTENT)
+def test_request_single_record_without_content():
+    result = request_single_record(KNOWN_RESULT_NO_CONTENT)
     assert result["content"] == ""
 
 
-def test_save_single_record_without_content_error_handling():
-    result = save_single_record(KNOWN_RESULT_NO_CONTENT_ERROR_HANDLING)
+def test_request_single_record_without_content_error_handling():
+    result = request_single_record(KNOWN_RESULT_NO_CONTENT_ERROR_HANDLING)
     assert result["content"] == ""
 
 
@@ -92,16 +92,13 @@ KNOWN_RESULTS = [{'charset': 'UTF-8',
 
 def test_get_multiple_extracts_single_threaded(snapshot):
     results = get_multiple_extracts(KNOWN_RESULTS)
-
     snapshot.assert_match(results)
 
 
 def test_get_multiple_extracts_multi_threaded(snapshot):
     results = get_multiple_extracts(KNOWN_RESULTS, 'data/', threads=2)
-
     # sorting values to counteract the random results order, which is caused
     # through the randomness in which thread download finished first
     results_df = pd.DataFrame(results)
     sorted_results_df = results_df.sort_values(by="timestamp")
-
     snapshot.assert_match(sorted_results_df.to_dict("records"))

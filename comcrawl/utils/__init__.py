@@ -4,10 +4,9 @@ from .initialization import (
 	download_available_indexes
 )
 from .download import (
-	save_single_record,
-	save_single_extract,
-	get_single_extract,get_multiple_extracts,
-	extract_cache_path,jsonl_cache_path,index_cache_path
+    get_single_record,
+    get_single_extract,get_multiple_extracts,
+	extract_cache_path,jsonl_cache_path,index_cache_path,
 )
 from .search import (
 	get_single_index,get_multiple_indexes

@@ -9,11 +9,10 @@ from pathlib import Path
 from ..utils.custom_types import Index, IndexList, ResultList
 from ..utils import (
     download_available_indexes,
-    save_single_record,save_single_extract,
     get_single_index,get_multiple_indexes,
+    get_single_record,
     get_single_extract,get_multiple_extracts,
     read_json,write_json,
-    read_cache,extract_cache_path,index_cache_path,
     strip_cache,redump_cache,
 )
 import pandas as pd
@@ -200,7 +199,14 @@ class IndexClient:
     # https://commoncrawl.org/errata/missing-language-classification
     # language classification added since 2018-39
 
-    def __init__(self, index: Index = None, outdir: str = 'data/', verbose: bool = False) -> None:
+    def __init__(self, 
+        index: Index = None, 
+        outdir: str = 'data/', 
+        should_save_indexes: bool = False,
+        should_save_records: bool = False,
+        should_save_extracts: bool = False,
+        verbose: bool = False,
+    ) -> None:
         """Initializes the class instance.
 
         Args:
@@ -213,17 +219,21 @@ class IndexClient:
 
         self.indexes = [index] if isinstance(index,str) else index # ensure index saved as a list
         self.outdir = Path(outdir)
+        self.should_save_indexes = should_save_indexes
+        self.should_save_records = should_save_records
+        self.should_save_extracts = should_save_extracts
         self.results: ResultList = []
 
-        #self._get_single_record = lambda : get_single_record
-        self._save_single_record = lambda result: save_single_record(result, self.outdir)
-        self._get_single_extract = lambda result: get_single_extract(result, self.outdir)
-        self._save_single_extract = lambda result: save_single_extract(result, self.outdir)
+        # index
+        self._get_single_index = lambda url, index: get_single_index(url, index, self.outdir, self.should_save_indexes)
+        self._get_multiple_indexes = lambda url, indexes, threads: get_multiple_indexes(url, indexes, self.outdir, self.should_save_indexes, threads)
 
-        self._get_single_index = lambda url, index: get_single_index(url, index, self.outdir)
-        self._get_multiple_indexes = lambda url, indexes, threads: get_multiple_indexes(url, indexes, self.outdir, threads)
-        self._get_single_extract = lambda result: get_single_extract(result, self.outdir)
-        self._get_multiple_extracts = lambda results, threads: get_multiple_extracts(results, self.outdir, threads)
+        # records
+        self._get_single_record = lambda result: get_single_record(result, self.outdir, self.should_save_records)
+
+        # extracts
+        self._get_single_extract = lambda result: get_single_extract(result, self.outdir, self.should_save_extracts)
+        self._get_multiple_extracts = lambda results, threads: get_multiple_extracts(results, self.outdir, self.should_save_extracts, threads)
 
     def strip_cache(self, indexdir: str) -> None: strip_cache(indexdir)
     def redump_cache(self, indexdir: str) -> None: redump_cache(indexdir)

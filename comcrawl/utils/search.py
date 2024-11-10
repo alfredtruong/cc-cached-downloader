@@ -14,8 +14,10 @@ from urllib.parse import quote
 from .custom_types import ResultList,IndexList
 from .cache import read_jsonl,write_jsonl
 from .multithreading import make_multithreaded
+
 from fake_useragent import UserAgent
 ua = UserAgent()
+
 
 TIMEOUT_DURATION = 60
 URL_TEMPLATE = "https://index.commoncrawl.org/CC-MAIN-{index}-index?url={url}&output=json"
@@ -27,8 +29,8 @@ def search_cache_path(url: str, index: str, basepath: str) -> Path:
 search_cache_path(url='*.hk01.com', index='2024-26').exists()
 '''
 
-# given index and url, do request with cc index api
-def save_single_index(url: str, index: str, basepath: str) -> ResultList:
+# given index and url, request with cc index api
+def request_single_index(url: str, index: str) -> ResultList:
     """Searches specific Common Crawl Index for given URL pattern.
 
     Args:
@@ -42,26 +44,20 @@ def save_single_index(url: str, index: str, basepath: str) -> ResultList:
     '''
     index = '2024-26'
     url = '*.hk01.com'
-    '''
-    '''
+
     cdx-api
     - uses pywb cc-index api, https://index.commoncrawl.org/CC-MAIN-2018-13-index
     - https://github.com/ikreymer/cc-index-server
     - https://github.com/ikreymer/cdx-index-client
     '''
-    # testing
-    #print(f'[save_single_index] basepath = {basepath}, index = {index}, url = {url}')
-
-    # default
-    results: ResultList = [] # no results
-
-    # build request
-    request_url = URL_TEMPLATE.format(index=index, url=url) # https://index.commoncrawl.org/CC-MAIN-2018-13-index?url=*.hk01.com/&output=json
-
     # do request
+    results: ResultList = [] # default = no results
     try:
-        # request
-        print(f'[save_single_index] request_url = {request_url}')
+        # build
+        request_url = URL_TEMPLATE.format(index=index, url=url) # https://index.commoncrawl.org/CC-MAIN-2018-13-index?url=*.hk01.com/&output=json
+
+        # do
+        #print(f'[request_single_index] request_url = {request_url}')
         response = requests.get(
             request_url,
             timeout=TIMEOUT_DURATION,
@@ -71,42 +67,40 @@ def save_single_index(url: str, index: str, basepath: str) -> ResultList:
                 #"Connection": "keep-alive"
             }
         )
-        # {"urlkey": "com,hk01,2016legcoelection)/candidate/tag/205/54", "timestamp": "20180321221633", "url": "http://2016legcoelection.hk01.com/candidate/tag/205/54", "mime": "text/html", "mime-detected": "text/html", "status": "200", "digest": "OMQ2TTHHOFVB3S7TPJUXKICPII6YNWJW", "length": "4535", "offset": "1183740", "filename": "crawl-data/CC-MAIN-2018-13/segments/1521257647706.69/warc/CC-MAIN-20180321215410-20180321235410-00385.warc.gz"}
         response.raise_for_status()
+        # {"urlkey": "com,hk01,2016legcoelection)/candidate/tag/205/54", "timestamp": "20180321221633", "url": "http://2016legcoelection.hk01.com/candidate/tag/205/54", "mime": "text/html", "mime-detected": "text/html", "status": "200", "digest": "OMQ2TTHHOFVB3S7TPJUXKICPII6YNWJW", "length": "4535", "offset": "1183740", "filename": "crawl-data/CC-MAIN-2018-13/segments/1521257647706.69/warc/CC-MAIN-20180321215410-20180321235410-00385.warc.gz"}
 
         # parse
         if response.status_code == 200:
             results = [json.loads(line) for line in response.content.decode().splitlines()] # overwrite default with parsed result
-    except ReadTimeout as e:
-        print(f'[save_single_index] request timed out: {e}')
-    except RequestException as e:
-        print(f'[save_single_index] an error occurred: {e}')
 
-    # cache
-    write_jsonl(results, search_cache_path(url, index, basepath))
+    except ReadTimeout as e:
+        print(f'[request_single_index] request timed out: {e}')
+    except RequestException as e:
+        print(f'[request_single_index] an error occurred: {e}')
 
     # return
     return results
 '''
-save_single_index('*.hk01.com','2024-26')
-save_single_index('*.hk.news.yahoo.com','2024-26')
+request_single_index('*.hk01.com','2024-26')
+request_single_index('*.hk.news.yahoo.com','2024-26')
 '''
 
-# read local if it exists
-def get_single_index(url: str, index: str, basepath: str) -> ResultList:
-    # populate res
+# given index and url, get index
+def get_single_index(url: str, index: str, basepath: str, should_save: bool = False) -> ResultList:
     cache_path = search_cache_path(url, index, basepath)
     if cache_path.exists():
         print(f'[get_single_index][cache] {cache_path}')
-        results = read_jsonl(cache_path)
+        results: ResultList = read_jsonl(cache_path)
     else:
-        print(f'[get_single_index][download] {cache_path}')
-        results = save_single_index(url, index, basepath)
+        results: ResultList = request_single_index(url, index)
+        if should_save:
+            write_jsonl(results, cache_path)
 
     # return
     return results
 
-def get_multiple_indexes(url: str, indexes: IndexList, basepath: str, threads: int = None) -> ResultList:
+def get_multiple_indexes(url: str, indexes: IndexList, basepath: str, should_save: bool = False, threads: int = None) -> ResultList:
     """Searches multiple Common Crawl Indexes for URL pattern.
 
     Args:
@@ -120,16 +114,16 @@ def get_multiple_indexes(url: str, indexes: IndexList, basepath: str, threads: i
 
     """
     # populate results
-    out: ResultList = [] # default, i.e. no results
+    out: ResultList = [] # default = no results
     if threads:
         # multi-thread
         multithreaded_search = make_multithreaded(get_single_index, threads)
-        out = multithreaded_search(indexes, url, basepath)
+        out = multithreaded_search(indexes, url, basepath, should_save)
     else:
         # single-thread
         for index in indexes:
-            res:ResultList = get_single_index(index, url, basepath)
-            out.extend(res) # extend
+            res:ResultList = get_single_index(index, url, basepath, should_save)
+            out.extend(res) # extend with multiple results
 
     # return
     return out
