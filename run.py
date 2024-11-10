@@ -31,7 +31,7 @@ if not is_jupyter:
 	MAX_LENGTH = args.max_length
 else:
 	#print('there')
-	OUTPUT_DIR = '/home/alfred/nfs/cc_zho_2' #OUTPUT_DIR = '/home/alfred/nfs/cc_zho_hk'
+	OUTPUT_DIR = '/home/alfred/nfs/cc_zho' #OUTPUT_DIR = '/home/alfred/nfs/cc_zho_hk'
 	INDEX = '2024-10' #INDEX = '2018-43'
 	THREADS = 50
 	MIN_LENGTH = None
@@ -65,8 +65,8 @@ for i,x in enumerate(ic.results):
 
 ic._save_single_record(ic.results[101])
 
-(base) alfred@net-g14:/nfs/alfred/cc_zho_2$ ll /nfs/alfred/cc_zho_2/records/2024-10/*/*.gz # raw record
-(base) alfred@net-g14:/nfs/alfred/cc_zho_2$ less /nfs/alfred/cc_zho_2/extracts/2024-10/2024-10.jsonl # extract
+(base) alfred@net-g14:/nfs/alfred/cc_zho$ ll /nfs/alfred/cc_zho/records/2024-10/*/*.gz # raw record
+(base) alfred@net-g14:/nfs/alfred/cc_zho$ less /nfs/alfred/cc_zho/extracts/2024-10/2024-10.jsonl # extract
 '''
 #%%
 ################# DOWNLOAD
